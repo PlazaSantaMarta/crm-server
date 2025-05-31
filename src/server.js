@@ -129,6 +129,10 @@ app.get('/', (req, res) => {
   res.send('🚀 API de contactos con Google lista!');
 });
 
+app.get('/google4dc067070f5d623b.html', (req, res) => {
+  res.send('google-site-verification: google4dc067070f5d623b.html');
+});
+
 // Montar rutas
 app.use('/api/auth', authRoutes);
 app.use('/api/kommo', kommoRoutes);
