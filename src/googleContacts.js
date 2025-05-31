@@ -32,17 +32,26 @@ async function getContactsByCode(code) {
   const oauth2Client = getOAuth2Client();
 
   try {
-    // Buscar token en base de datos
-    let tokenDoc = await GoogleToken.findOne({ code });
+    // Buscar el token por proveedor (un solo documento)
+    let tokenDoc = await GoogleToken.findOne({ provider: 'google' });
 
-    if (!tokenDoc) {
+    if (!tokenDoc || tokenDoc.lastCode !== code) {
       console.log('Obteniendo nuevos tokens...');
       const { tokens } = await oauth2Client.getToken(code);
-      tokenDoc = await GoogleToken.create({
-        code,
-        tokens,
-        lastUpdated: new Date()
-      });
+
+      if (tokenDoc) {
+        tokenDoc.tokens = tokens;
+        tokenDoc.lastCode = code;
+        tokenDoc.lastUpdated = new Date();
+        await tokenDoc.save();
+      } else {
+        tokenDoc = await GoogleToken.create({
+          provider: 'google',
+          tokens,
+          lastCode: code,
+          lastUpdated: new Date()
+        });
+      }
     }
 
     oauth2Client.setCredentials(tokenDoc.tokens);
@@ -54,6 +63,7 @@ async function getContactsByCode(code) {
       tokenDoc.tokens = credentials;
       tokenDoc.lastUpdated = new Date();
       await tokenDoc.save();
+      oauth2Client.setCredentials(credentials);
     }
 
     // Usar People API
@@ -83,8 +93,9 @@ async function getContactsByCode(code) {
   } catch (error) {
     console.error('Error detallado:', error);
 
+    // Si el token es inválido, se borra el doc
     if (error.message.includes('invalid_grant') || error.message.includes('invalid_token')) {
-      await GoogleToken.deleteOne({ code });
+      await GoogleToken.deleteOne({ provider: 'google' });
     }
 
     throw error;
