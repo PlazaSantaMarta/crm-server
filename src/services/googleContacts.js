@@ -1,5 +1,5 @@
 const { google } = require('googleapis');
-const GoogleToken = require('@/models/GoogleToken');
+const GoogleToken = require('../models/GoogleToken');
 const { setupLogger } = require('../utils/logger');
 const serverState = require('../utils/serverState');
 const connectDB = require('../config/database');
