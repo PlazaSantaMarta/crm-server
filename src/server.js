@@ -23,7 +23,7 @@ app.use(express.json());
 
 // Configure CORS to allow requests from the frontend
 app.use(cors({
-  origin: [process.env.BACK_URI,'http://localhost:5173', 'http://127.0.0.1:5173'],
+  origin: [process.env.FRONT_URI, process.env.BACK_URI,'http://localhost:5173', 'http://127.0.0.1:5173'],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   credentials: true
 }));
