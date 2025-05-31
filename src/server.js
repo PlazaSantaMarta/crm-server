@@ -2,17 +2,15 @@ require('dotenv').config(); // 👈 Carga las variables del archivo .env
 
 const express = require('express');
 const cors = require('cors');
-const connectDB = require('./config/database'); // 👈 Importamos la conexión a MongoDB
+const connectDB = require('./config/database');
 const googleContactsService = require('./services/googleContacts');
 const contactsRouter = require('./routes/contacts');
 const indexRouter = require('./routes/index');
 const kommoRoutes = require('./routes/kommoRoutes');
-const authRoutes = require('./routes/authRoutes'); // 👈 Importamos las rutas de autenticación
+const authRoutes = require('./routes/authRoutes');
 const { setupLogger } = require('./utils/logger');
 const { initializeDataDirectory } = require('./utils/init');
 const serverState = require('./utils/serverState');
-const path = require('path');
-const fs = require('fs/promises');
 
 const logger = setupLogger();
 const app = express();
@@ -21,14 +19,23 @@ const PORT = process.env.PORT || 3000;
 // Middleware para parsear JSON
 app.use(express.json());
 
-// Configure CORS to allow requests from the frontend
+// Logging simple de origen para debugging CORS
+app.use((req, res, next) => {
+  logger.info(`Request from origin: ${req.headers.origin} | Path: ${req.path}`);
+  next();
+});
+
+// CORS abierto: permite cualquier origen
 app.use(cors({
-  origin: [process.env.FRONT_URI, process.env.BACK_URI,'http://localhost:5173', 'http://127.0.0.1:5173'],
+  origin: true,  // acepta cualquier origen
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   credentials: true
 }));
 
-// Ruta para iniciar autenticación con Google
+// Responder correctamente a peticiones OPTIONS (preflight)
+app.options('*', cors());
+
+// --- Rutas ---
 app.get('/api/google', (req, res) => {
   try {
     const url = googleContactsService.getAuthUrl();
@@ -39,7 +46,6 @@ app.get('/api/google', (req, res) => {
   }
 });
 
-// Ruta de callback de Google
 app.get('/api/auth/google/callback', async (req, res) => {
   const code = req.query.code;
 
@@ -82,7 +88,6 @@ app.get('/api/auth/google/callback', async (req, res) => {
   }
 });
 
-// Ruta para cerrar sesión de Google
 app.post('/api/google/logout', async (req, res) => {
   try {
     await googleContactsService.logout();
@@ -93,7 +98,6 @@ app.post('/api/google/logout', async (req, res) => {
   }
 });
 
-// Ruta para obtener estado de autenticación
 app.get('/api/auth/status', (req, res) => {
   res.json({
     isAuthenticated: serverState.isAuthenticated,
@@ -101,7 +105,6 @@ app.get('/api/auth/status', (req, res) => {
   });
 });
 
-// Ruta para obtener contactos
 app.get('/api/contacts', async (req, res) => {
   try {
     if (!serverState.isAuthenticated) {
@@ -122,52 +125,47 @@ app.get('/api/contacts', async (req, res) => {
   }
 });
 
-// Ruta raíz opcional
 app.get('/', (req, res) => {
   res.send('🚀 API de contactos con Google lista!');
 });
 
-// Montar las rutas
-app.use('/api/auth', authRoutes);     // 👈 Rutas de autenticación (incluye login, logout y status)
-app.use('/api/kommo', kommoRoutes);   // Rutas de Kommo
-app.use('/api', indexRouter);         // Rutas generales
+// Montar rutas
+app.use('/api/auth', authRoutes);
+app.use('/api/kommo', kommoRoutes);
+app.use('/api', indexRouter);
 app.use('/api/contacts', contactsRouter);
 
-// Inicialización
-async function initialize() {
-    try {
-        await initializeDataDirectory();
-        
-        // Conectar a MongoDB
-        await connectDB();
-        
-        // Verificar estado inicial de autenticación
-        try {
-            await googleContactsService.initialize();
-            logger.info('🔐 Servidor iniciado con sesión activa');
-        } catch (error) {
-            logger.info('🔓 Servidor iniciado. Esperando autenticación...');
-        }
-        
-    } catch (error) {
-        logger.error('Error en la inicialización:', error);
-        process.exit(1);
-    }
-}
-
-// Manejo de errores
+// Manejo de errores general
 app.use((err, req, res, next) => {
-    logger.error('Error no manejado:', err);
-    res.status(500).json({ error: 'Error interno del servidor' });
+  logger.error('Error no manejado:', err);
+  res.status(500).json({ error: 'Error interno del servidor' });
 });
 
+// Inicialización del servidor y base de datos
+async function initialize() {
+  try {
+    await initializeDataDirectory();
+    await connectDB();
+
+    try {
+      await googleContactsService.initialize();
+      logger.info('🔐 Servidor iniciado con sesión activa');
+    } catch (error) {
+      logger.info('🔓 Servidor iniciado. Esperando autenticación...');
+    }
+  } catch (error) {
+    logger.error('Error en la inicialización:', error);
+    process.exit(1);
+  }
+}
+
 initialize().then(() => {
-    app.listen(PORT, () => {
-        logger.info(`
+  app.listen(PORT, () => {
+    logger.info(`
 🚀 Servidor CRM iniciado
 📍 Puerto: ${PORT}
 🔒 Estado: ${serverState.isAuthenticated ? 'Autenticado' : 'Esperando autenticación'}
 📱 Contactos en memoria: ${serverState.getContacts()?.length || 0}
-        `);
-    });
+    `);
+  });
 });
