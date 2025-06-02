@@ -1,0 +1,20 @@
+{"level":"info","message":"Directorio data creado correctamente","service":"crm-kommo","timestamp":"2025-06-02 15:15:18"}
+{"level":"error","message":"No hay credenciales válidas para Google","service":"crm-kommo","timestamp":"2025-06-02 15:15:19"}
+{"level":"info","message":"Estado de autenticación: No autenticado","service":"crm-kommo","timestamp":"2025-06-02 15:15:19"}
+{"level":"info","message":"🔓 Servidor iniciado. Esperando autenticación...","service":"crm-kommo","timestamp":"2025-06-02 15:15:19"}
+{"level":"info","message":"\n🚀 Servidor CRM iniciado\n📍 Puerto: 3000\n🔒 Estado: Esperando autenticación\n📱 Contactos en memoria: 0\n    ","service":"crm-kommo","timestamp":"2025-06-02 15:15:19"}
+{"level":"info","message":"Directorio data existe","service":"crm-kommo","timestamp":"2025-06-02 15:21:50"}
+{"level":"error","message":"No hay credenciales válidas para Google","service":"crm-kommo","timestamp":"2025-06-02 15:21:52"}
+{"level":"info","message":"Estado de autenticación: No autenticado","service":"crm-kommo","timestamp":"2025-06-02 15:21:52"}
+{"level":"info","message":"🔓 Servidor iniciado. Esperando autenticación...","service":"crm-kommo","timestamp":"2025-06-02 15:21:52"}
+{"level":"info","message":"\n🚀 Servidor CRM iniciado\n📍 Puerto: 3000\n🔒 Estado: Esperando autenticación\n📱 Contactos en memoria: 0\n    ","service":"crm-kommo","timestamp":"2025-06-02 15:21:52"}
+{"level":"info","message":"Directorio data existe","service":"crm-kommo","timestamp":"2025-06-02 15:23:22"}
+{"level":"error","message":"No hay credenciales válidas para Google","service":"crm-kommo","timestamp":"2025-06-02 15:23:24"}
+{"level":"info","message":"Estado de autenticación: No autenticado","service":"crm-kommo","timestamp":"2025-06-02 15:23:24"}
+{"level":"info","message":"🔓 Servidor iniciado. Esperando autenticación...","service":"crm-kommo","timestamp":"2025-06-02 15:23:24"}
+{"level":"info","message":"\n🚀 Servidor CRM iniciado\n📍 Puerto: 3000\n🔒 Estado: Esperando autenticación\n📱 Contactos en memoria: 0\n    ","service":"crm-kommo","timestamp":"2025-06-02 15:23:24"}
+{"level":"info","message":"Directorio data existe","service":"crm-kommo","timestamp":"2025-06-02 16:03:54"}
+{"level":"error","message":"No hay credenciales válidas para Google","service":"crm-kommo","timestamp":"2025-06-02 16:03:55"}
+{"level":"info","message":"Estado de autenticación: No autenticado","service":"crm-kommo","timestamp":"2025-06-02 16:03:55"}
+{"level":"info","message":"🔓 Servidor iniciado. Esperando autenticación...","service":"crm-kommo","timestamp":"2025-06-02 16:03:55"}
+{"level":"info","message":"\n🚀 Servidor CRM iniciado\n📍 Puerto: 3000\n🔒 Estado: Esperando autenticación\n📱 Contactos en memoria: 0\n    ","service":"crm-kommo","timestamp":"2025-06-02 16:03:55"}

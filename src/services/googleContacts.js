@@ -3,6 +3,7 @@ const { setupLogger } = require('../utils/logger');
 const serverState = require('../utils/serverState');
 const GoogleToken = require('../models/GoogleToken'); // Ruta relativa
 const connectDB = require('../config/database'); // Conexión a MongoDB
+const fs = require('fs').promises;
 
 const logger = setupLogger();
 
@@ -83,6 +84,61 @@ class GoogleContactsService {
     return allContacts;
   }
 
+  async processTextFile(filePath) {
+    try {
+      const fileContent = await fs.readFile(filePath, 'utf-8');
+      const lines = fileContent.split('\n');
+      
+      const formatted = lines
+        .filter(line => line.trim()) // Ignorar líneas vacías
+        .map(line => {
+          const [name, phoneNumber] = line.split(',').map(item => item.trim());
+          return {
+            id: Date.now() + Math.random().toString(36).substr(2, 9),
+            name: name || 'Sin nombre',
+            phoneNumber: phoneNumber ? phoneNumber.replace(/\s+/g, '').replace(/[-\(\)]/g, '') : '',
+            isValid: false,
+            source: 'text_file'
+          };
+        })
+        .filter(contact => contact.phoneNumber);
+
+      // Combinar con los contactos existentes
+      const existingContacts = serverState.getContacts() || [];
+      const allContacts = [...existingContacts, ...formatted];
+      
+      // Eliminar duplicados basados en número de teléfono
+      const uniqueContacts = this.removeDuplicates(allContacts);
+      serverState.setContacts(uniqueContacts);
+
+      // Limpiar el archivo temporal
+      await fs.unlink(filePath);
+
+      logger.info(`Procesados ${formatted.length} contactos desde archivo de texto`);
+      return formatted;
+    } catch (error) {
+      logger.error('Error al procesar archivo de texto:', error);
+      throw new Error('Error al procesar el archivo de contactos');
+    }
+  }
+
+  removeDuplicates(contacts) {
+    const seen = new Map();
+    return contacts.filter(contact => {
+      const normalizedPhone = contact.phoneNumber.replace(/\D/g, '');
+      if (seen.has(normalizedPhone)) {
+        return false;
+      }
+      seen.set(normalizedPhone, true);
+      return true;
+    });
+  }
+
+  getTotalContacts() {
+    const contacts = serverState.getContacts();
+    return contacts ? contacts.length : 0;
+  }
+
   async getContacts() {
     await this.initialize();
 
@@ -99,7 +155,8 @@ class GoogleContactsService {
         googleId: c.resourceName,
         name: c.names?.[0]?.displayName || 'Sin nombre',
         phoneNumber: c.phoneNumbers[0].value.replace(/\s+/g, '').replace(/[-\(\)]/g, ''),
-        isValid: false
+        isValid: false,
+        source: 'google'
       }));
 
     serverState.setContacts(formatted);
