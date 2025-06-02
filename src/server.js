@@ -2,6 +2,8 @@ require('dotenv').config(); // 👈 Carga las variables del archivo .env
 
 const express = require('express');
 const cors = require('cors');
+const multer = require('multer');
+const path = require('path');
 const connectDB = require('./config/database');
 const googleContactsService = require('./services/googleContacts');
 const contactsRouter = require('./routes/contacts');
@@ -15,6 +17,18 @@ const serverState = require('./utils/serverState');
 const logger = setupLogger();
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// Configurar multer para manejar archivos
+const upload = multer({
+  dest: path.join(__dirname, 'uploads'),
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype === 'text/plain') {
+      cb(null, true);
+    } else {
+      cb(new Error('Solo se permiten archivos .txt'));
+    }
+  }
+});
 
 // Middleware para parsear JSON
 app.use(express.json());
@@ -138,6 +152,9 @@ app.use('/api/auth', authRoutes);
 app.use('/api/kommo', kommoRoutes);
 app.use('/api', indexRouter);
 app.use('/api/contacts', contactsRouter);
+
+// Asegurarse de que existe el directorio de uploads
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Manejo de errores general
 app.use((err, req, res, next) => {

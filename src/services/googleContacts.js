@@ -87,21 +87,31 @@ class GoogleContactsService {
   async processTextFile(filePath) {
     try {
       const fileContent = await fs.readFile(filePath, 'utf-8');
-      const lines = fileContent.split('\n');
+      // Manejar diferentes tipos de saltos de línea (Windows y Unix)
+      const lines = fileContent.split(/\r?\n/);
       
       const formatted = lines
         .filter(line => line.trim()) // Ignorar líneas vacías
         .map(line => {
-          const [name, phoneNumber] = line.split(',').map(item => item.trim());
+          // Limpiar la línea de espacios extras y caracteres especiales
+          const cleanLine = line.trim().replace(/\s+/g, '');
+          const [name, phoneNumber] = cleanLine.split(',');
+          
+          // Validar que tengamos tanto nombre como número
+          if (!name || !phoneNumber) {
+            logger.warn(`Línea inválida ignorada: ${line}`);
+            return null;
+          }
+
           return {
-            id: Date.now() + Math.random().toString(36).substr(2, 9),
-            name: name || 'Sin nombre',
-            phoneNumber: phoneNumber ? phoneNumber.replace(/\s+/g, '').replace(/[-\(\)]/g, '') : '',
+            id: `txt-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+            name: name.trim(),
+            phoneNumber: phoneNumber.replace(/[^0-9]/g, ''), // Solo mantener números
             isValid: false,
             source: 'text_file'
           };
         })
-        .filter(contact => contact.phoneNumber);
+        .filter(contact => contact !== null && contact.phoneNumber); // Filtrar contactos nulos o sin número
 
       // Combinar con los contactos existentes
       const existingContacts = serverState.getContacts() || [];
@@ -118,7 +128,7 @@ class GoogleContactsService {
       return formatted;
     } catch (error) {
       logger.error('Error al procesar archivo de texto:', error);
-      throw new Error('Error al procesar el archivo de contactos');
+      throw new Error('Error al procesar el archivo de contactos: ' + error.message);
     }
   }
 
