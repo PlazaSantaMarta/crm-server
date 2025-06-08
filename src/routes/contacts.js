@@ -1,6 +1,21 @@
 const express = require('express');
 const router = express.Router();
 const { setupLogger } = require('../utils/logger');
+const multer = require('multer');
+const path = require('path');
+const googleContactsService = require('../services/googleContacts');
+
+// Configurar multer para manejar archivos
+const upload = multer({
+  dest: 'uploads/',
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype === 'text/plain') {
+      cb(null, true);
+    } else {
+      cb(new Error('Solo se permiten archivos .txt'));
+    }
+  }
+});
 
 const logger = setupLogger();
 
@@ -112,6 +127,26 @@ router.post('/:id/send', async (req, res) => {
       error: 'Error enviando mensaje',
       message: error.message
     });
+  }
+});
+
+// Nuevo endpoint para subir archivo de contactos
+router.post('/upload', upload.single('contacts'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No se subió ningún archivo' });
+    }
+
+    const contacts = await googleContactsService.processTextFile(req.file.path);
+    
+    res.json({
+      message: 'Archivo procesado correctamente',
+      contactsAdded: contacts.length,
+      totalContacts: googleContactsService.getTotalContacts()
+    });
+  } catch (error) {
+    logger.error('Error procesando archivo de contactos:', error);
+    res.status(500).json({ error: 'Error procesando archivo de contactos' });
   }
 });
 

@@ -1,0 +1,59 @@
+{"level":"info","message":"Directorio data creado correctamente","service":"crm-kommo","timestamp":"2025-06-02 15:15:18"}
+{"level":"error","message":"No hay credenciales válidas para Google","service":"crm-kommo","timestamp":"2025-06-02 15:15:19"}
+{"level":"info","message":"Estado de autenticación: No autenticado","service":"crm-kommo","timestamp":"2025-06-02 15:15:19"}
+{"level":"info","message":"🔓 Servidor iniciado. Esperando autenticación...","service":"crm-kommo","timestamp":"2025-06-02 15:15:19"}
+{"level":"info","message":"\n🚀 Servidor CRM iniciado\n📍 Puerto: 3000\n🔒 Estado: Esperando autenticación\n📱 Contactos en memoria: 0\n    ","service":"crm-kommo","timestamp":"2025-06-02 15:15:19"}
+{"level":"info","message":"Directorio data existe","service":"crm-kommo","timestamp":"2025-06-02 15:21:50"}
+{"level":"error","message":"No hay credenciales válidas para Google","service":"crm-kommo","timestamp":"2025-06-02 15:21:52"}
+{"level":"info","message":"Estado de autenticación: No autenticado","service":"crm-kommo","timestamp":"2025-06-02 15:21:52"}
+{"level":"info","message":"🔓 Servidor iniciado. Esperando autenticación...","service":"crm-kommo","timestamp":"2025-06-02 15:21:52"}
+{"level":"info","message":"\n🚀 Servidor CRM iniciado\n📍 Puerto: 3000\n🔒 Estado: Esperando autenticación\n📱 Contactos en memoria: 0\n    ","service":"crm-kommo","timestamp":"2025-06-02 15:21:52"}
+{"level":"info","message":"Directorio data existe","service":"crm-kommo","timestamp":"2025-06-02 15:23:22"}
+{"level":"error","message":"No hay credenciales válidas para Google","service":"crm-kommo","timestamp":"2025-06-02 15:23:24"}
+{"level":"info","message":"Estado de autenticación: No autenticado","service":"crm-kommo","timestamp":"2025-06-02 15:23:24"}
+{"level":"info","message":"🔓 Servidor iniciado. Esperando autenticación...","service":"crm-kommo","timestamp":"2025-06-02 15:23:24"}
+{"level":"info","message":"\n🚀 Servidor CRM iniciado\n📍 Puerto: 3000\n🔒 Estado: Esperando autenticación\n📱 Contactos en memoria: 0\n    ","service":"crm-kommo","timestamp":"2025-06-02 15:23:24"}
+{"level":"info","message":"Directorio data existe","service":"crm-kommo","timestamp":"2025-06-02 16:03:54"}
+{"level":"error","message":"No hay credenciales válidas para Google","service":"crm-kommo","timestamp":"2025-06-02 16:03:55"}
+{"level":"info","message":"Estado de autenticación: No autenticado","service":"crm-kommo","timestamp":"2025-06-02 16:03:55"}
+{"level":"info","message":"🔓 Servidor iniciado. Esperando autenticación...","service":"crm-kommo","timestamp":"2025-06-02 16:03:55"}
+{"level":"info","message":"\n🚀 Servidor CRM iniciado\n📍 Puerto: 3000\n🔒 Estado: Esperando autenticación\n📱 Contactos en memoria: 0\n    ","service":"crm-kommo","timestamp":"2025-06-02 16:03:55"}
+{"level":"info","message":"Directorio data existe","service":"crm-kommo","timestamp":"2025-06-02 16:38:11"}
+{"level":"info","message":"Estado de autenticación: Autenticado","service":"crm-kommo","timestamp":"2025-06-02 16:38:12"}
+{"level":"info","message":"Credenciales de Google cargadas desde MongoDB","service":"crm-kommo","timestamp":"2025-06-02 16:38:12"}
+{"level":"info","message":"🔐 Servidor iniciado con sesión activa","service":"crm-kommo","timestamp":"2025-06-02 16:38:12"}
+{"level":"info","message":"\n🚀 Servidor CRM iniciado\n📍 Puerto: 3000\n🔒 Estado: Autenticado\n📱 Contactos en memoria: 0\n    ","service":"crm-kommo","timestamp":"2025-06-02 16:38:12"}
+{"level":"info","message":"Directorio data existe","service":"crm-kommo","timestamp":"2025-06-02 16:39:10"}
+{"level":"info","message":"Estado de autenticación: Autenticado","service":"crm-kommo","timestamp":"2025-06-02 16:39:11"}
+{"level":"info","message":"Credenciales de Google cargadas desde MongoDB","service":"crm-kommo","timestamp":"2025-06-02 16:39:11"}
+{"level":"info","message":"🔐 Servidor iniciado con sesión activa","service":"crm-kommo","timestamp":"2025-06-02 16:39:11"}
+{"level":"info","message":"\n🚀 Servidor CRM iniciado\n📍 Puerto: 3000\n🔒 Estado: Autenticado\n📱 Contactos en memoria: 0\n    ","service":"crm-kommo","timestamp":"2025-06-02 16:39:11"}
+{"level":"info","message":"Directorio data existe","service":"crm-kommo","timestamp":"2025-06-02 16:45:07"}
+{"level":"info","message":"Estado de autenticación: Autenticado","service":"crm-kommo","timestamp":"2025-06-02 16:45:08"}
+{"level":"info","message":"Credenciales de Google cargadas desde MongoDB","service":"crm-kommo","timestamp":"2025-06-02 16:45:08"}
+{"level":"info","message":"🔐 Servidor iniciado con sesión activa","service":"crm-kommo","timestamp":"2025-06-02 16:45:08"}
+{"level":"info","message":"\n🚀 Servidor CRM iniciado\n📍 Puerto: 3000\n🔒 Estado: Autenticado\n📱 Contactos en memoria: 0\n    ","service":"crm-kommo","timestamp":"2025-06-02 16:45:09"}
+{"level":"info","message":"Request from origin: undefined | Path: /api/contacts/upload","service":"crm-kommo","timestamp":"2025-06-02 16:49:39"}
+{"code":"LIMIT_UNEXPECTED_FILE","field":"contact","level":"error","message":"Unexpected field","name":"MulterError","service":"crm-kommo","stack":"MulterError: Unexpected field\n    at wrappedFileFilter (C:\\Users\\Flia. Obregon\\Desktop\\crm-server\\node_modules\\multer\\index.js:40:19)\n    at Multipart.<anonymous> (C:\\Users\\Flia. Obregon\\Desktop\\crm-server\\node_modules\\multer\\lib\\make-middleware.js:121:7)\n    at Multipart.emit (node:events:519:28)\n    at HeaderParser.cb (C:\\Users\\Flia. Obregon\\Desktop\\crm-server\\node_modules\\busboy\\lib\\types\\multipart.js:358:14)\n    at HeaderParser.push (C:\\Users\\Flia. Obregon\\Desktop\\crm-server\\node_modules\\busboy\\lib\\types\\multipart.js:162:20)\n    at SBMH.ssCb [as _cb] (C:\\Users\\Flia. Obregon\\Desktop\\crm-server\\node_modules\\busboy\\lib\\types\\multipart.js:394:37)\n    at feed (C:\\Users\\Flia. Obregon\\Desktop\\crm-server\\node_modules\\streamsearch\\lib\\sbmh.js:219:14)\n    at SBMH.push (C:\\Users\\Flia. Obregon\\Desktop\\crm-server\\node_modules\\streamsearch\\lib\\sbmh.js:104:16)\n    at Multipart._write (C:\\Users\\Flia. Obregon\\Desktop\\crm-server\\node_modules\\busboy\\lib\\types\\multipart.js:567:19)\n    at writeOrBuffer (node:internal/streams/writable:570:12)","storageErrors":[],"timestamp":"2025-06-02 16:49:39"}
+{"level":"info","message":"Directorio data existe","service":"crm-kommo","timestamp":"2025-06-02 16:54:16"}
+{"level":"info","message":"Estado de autenticación: Autenticado","service":"crm-kommo","timestamp":"2025-06-02 16:54:17"}
+{"level":"info","message":"Credenciales de Google cargadas desde MongoDB","service":"crm-kommo","timestamp":"2025-06-02 16:54:17"}
+{"level":"info","message":"🔐 Servidor iniciado con sesión activa","service":"crm-kommo","timestamp":"2025-06-02 16:54:17"}
+{"level":"info","message":"\n🚀 Servidor CRM iniciado\n📍 Puerto: 3000\n🔒 Estado: Autenticado\n📱 Contactos en memoria: 0\n    ","service":"crm-kommo","timestamp":"2025-06-02 16:54:17"}
+{"level":"info","message":"Request from origin: undefined | Path: /api/contacts/upload","service":"crm-kommo","timestamp":"2025-06-02 16:54:24"}
+{"level":"info","message":"Contactos almacenados en memoria: 0","service":"crm-kommo","timestamp":"2025-06-02 16:54:24"}
+{"level":"info","message":"Procesados 0 contactos desde archivo de texto","service":"crm-kommo","timestamp":"2025-06-02 16:54:24"}
+{"level":"info","message":"Directorio data existe","service":"crm-kommo","timestamp":"2025-06-02 16:55:59"}
+{"level":"info","message":"Estado de autenticación: Autenticado","service":"crm-kommo","timestamp":"2025-06-02 16:56:01"}
+{"level":"info","message":"Credenciales de Google cargadas desde MongoDB","service":"crm-kommo","timestamp":"2025-06-02 16:56:01"}
+{"level":"info","message":"🔐 Servidor iniciado con sesión activa","service":"crm-kommo","timestamp":"2025-06-02 16:56:01"}
+{"level":"info","message":"\n🚀 Servidor CRM iniciado\n📍 Puerto: 3000\n🔒 Estado: Autenticado\n📱 Contactos en memoria: 0\n    ","service":"crm-kommo","timestamp":"2025-06-02 16:56:01"}
+{"level":"info","message":"Request from origin: undefined | Path: /api/contacts/upload","service":"crm-kommo","timestamp":"2025-06-02 16:56:28"}
+{"level":"warn","message":"Línea inválida ignorada: 3777212256","service":"crm-kommo","timestamp":"2025-06-02 16:56:28"}
+{"level":"info","message":"Contactos almacenados en memoria: 0","service":"crm-kommo","timestamp":"2025-06-02 16:56:28"}
+{"level":"warn","message":"Línea inválida ignorada: 3777856254","service":"crm-kommo","timestamp":"2025-06-02 16:56:28"}
+{"level":"warn","message":"Línea inválida ignorada: 1234566645","service":"crm-kommo","timestamp":"2025-06-02 16:56:28"}
+{"level":"info","message":"Procesados 0 contactos desde archivo de texto","service":"crm-kommo","timestamp":"2025-06-02 16:56:28"}
+{"level":"info","message":"Request from origin: undefined | Path: /api/contacts/upload","service":"crm-kommo","timestamp":"2025-06-02 17:00:29"}
+{"level":"info","message":"Contactos almacenados en memoria: 3","service":"crm-kommo","timestamp":"2025-06-02 17:00:29"}
+{"level":"info","message":"Procesados 3 contactos desde archivo de texto","service":"crm-kommo","timestamp":"2025-06-02 17:00:29"}
