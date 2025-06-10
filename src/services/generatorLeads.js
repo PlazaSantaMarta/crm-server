@@ -29,14 +29,44 @@ class GeneratorLeadsService {
             this.accessToken = credentials.auth_token;
             this.baseURL = credentials.base_url;
             
-            // Actualizar la instancia de Axios
+            // Actualizar la instancia de Axios con timeouts más altos para evitar problemas de conexión
             this.axiosInstance = axios.create({
                 baseURL: this.baseURL,
-                timeout: 5000,
+                timeout: 30000, // Aumentar timeout a 30 segundos
                 headers: {
                     'Authorization': `Bearer ${this.accessToken}`,
                     'Content-Type': 'application/json'
+                },
+                // Configuración para reintentos en caso de fallos
+                maxRetries: 3,
+                retryDelay: 1000,
+                retryStatus: [408, 429, 500, 502, 503, 504]
+            });
+
+            // Añadir interceptor para manejar errores y reintentos
+            this.axiosInstance.interceptors.response.use(null, async (error) => {
+                const config = error.config;
+                
+                // Si no hay configuración de reintentos o ya se alcanzó el máximo
+                if (!config || !config.maxRetries || config.retryCount >= config.maxRetries) {
+                    return Promise.reject(error);
                 }
+                
+                // Si el status es uno de los que queremos reintentar
+                if (!config.retryStatus.includes(error.response?.status) && error.code !== 'ECONNABORTED') {
+                    return Promise.reject(error);
+                }
+                
+                // Incrementar contador de reintentos
+                config.retryCount = config.retryCount || 0;
+                config.retryCount += 1;
+                
+                // Esperar antes de reintentar
+                const delay = config.retryDelay || 1000;
+                await new Promise(resolve => setTimeout(resolve, delay));
+                
+                console.log(`🔄 Reintentando petición (${config.retryCount}/${config.maxRetries})...`);
+                return this.axiosInstance(config);
             });
 
             console.log('\n✅ Configuración establecida:');
@@ -269,10 +299,54 @@ class GeneratorLeadsService {
 
             console.log('📝 Creando contacto con datos:', JSON.stringify(contact, null, 2));
 
-            const response = await this.axiosInstance.post('/api/v4/contacts', [contact]);
-            const contactId = response.data._embedded.contacts[0].id;
-            console.log('✅ Contacto creado:', contactId);
-            return contactId;
+            try {
+                const response = await this.axiosInstance.post('/api/v4/contacts', [contact]);
+                
+                if (!response.data?._embedded?.contacts?.[0]?.id) {
+                    throw new Error('Respuesta inválida de la API al crear contacto');
+                }
+                
+                const contactId = response.data._embedded.contacts[0].id;
+                console.log('✅ Contacto creado:', contactId);
+                return contactId;
+            } catch (apiError) {
+                if (apiError.response) {
+                    const status = apiError.response.status;
+                    
+                    // Comprobar si ya existe un contacto con este teléfono
+                    if (status === 400 && apiError.response.data?.validation_errors) {
+                        const errors = apiError.response.data.validation_errors;
+                        console.log('Errores de validación:', errors);
+                        
+                        // Intentar buscar si el contacto ya existe
+                        if (errors.some(e => e.error.includes('duplicate'))) {
+                            console.log('⚠️ Posible contacto duplicado, intentando buscar...');
+                            try {
+                                // Buscar contacto por teléfono
+                                const query = encodeURIComponent(cleanPhone);
+                                const searchResponse = await this.axiosInstance.get(`/api/v4/contacts?query=${query}`);
+                                
+                                if (searchResponse.data?._embedded?.contacts?.length > 0) {
+                                    const existingContact = searchResponse.data._embedded.contacts[0];
+                                    console.log(`✅ Contacto existente encontrado: ${existingContact.id}`);
+                                    return existingContact.id;
+                                }
+                            } catch (searchError) {
+                                console.error('Error al buscar contacto existente:', searchError);
+                            }
+                        }
+                    }
+                    
+                    if (status === 402) {
+                        throw new Error('Error 402: Cuenta con restricciones de pago. Verifica tu suscripción de Kommo.');
+                    } else if (status === 429) {
+                        throw new Error('Error 429: Límite de API excedido. Espera unos minutos antes de intentar nuevamente.');
+                    }
+                }
+                
+                // Si llegamos aquí, re-lanzar el error original
+                throw apiError;
+            }
 
         } catch (error) {
             console.error('❌ Error al crear contacto:');
@@ -356,6 +430,21 @@ class GeneratorLeadsService {
                         continue;
                     }
 
+                    // Verificar la conexión antes de crear el contacto
+                    try {
+                        // Hacer una petición simple para verificar que la conexión sigue activa
+                        await this.axiosInstance.get('/api/v4/account');
+                    } catch (connError) {
+                        if (connError.response?.status === 401) {
+                            throw new Error('Token de acceso expirado o inválido. Por favor, vuelve a iniciar sesión.');
+                        } else if (connError.response?.status === 402) {
+                            throw new Error('Error 402: Cuenta de Kommo con restricciones. Verifica tu suscripción.');
+                        } else if (connError.response?.status === 403) {
+                            throw new Error('Error 403: No tienes permiso para realizar esta acción.');
+                        }
+                        throw connError;
+                    }
+
                     // Crear el contacto
                     const contactId = await this.createContact({
                         name: contact.name,
@@ -378,15 +467,40 @@ class GeneratorLeadsService {
 
                     results.processed++;
                     
-                    // Esperar 1 segundo entre cada contacto para no sobrecargar la API
-                    await new Promise(resolve => setTimeout(resolve, 120000)); //milisegundos = 2 minutos
+                    // Esperar un tiempo razonable entre cada contacto (500ms = medio segundo)
+                    await new Promise(resolve => setTimeout(resolve, 500)); 
                 } catch (error) {
                     console.error(`❌ Error procesando contacto ${contact.name}:`, error.message);
+                    
+                    // Detectar errores específicos de la API
+                    let errorMessage = error.message;
+                    if (error.response) {
+                        if (error.response.status === 402) {
+                            errorMessage = 'Error 402: Cuenta con restricciones de pago. Verifica tu suscripción de Kommo.';
+                        } else if (error.response.status === 429) {
+                            errorMessage = 'Error 429: Límite de API excedido. Espera unos minutos antes de intentar nuevamente.';
+                            // Esperar más tiempo si hay límite de API
+                            await new Promise(resolve => setTimeout(resolve, 5000));
+                        }
+                        
+                        // Incluir detalles adicionales si están disponibles
+                        if (error.response.data?.validation_errors) {
+                            errorMessage += ' Detalles: ' + JSON.stringify(error.response.data.validation_errors);
+                        }
+                    }
+                    
                     results.contacts.push({
                         name: contact.name,
-                        error: error.message,
+                        error: errorMessage,
                         success: false
                     });
+                    
+                    // Si encontramos un error grave de autenticación o límites, detenemos el proceso
+                    if (error.response?.status === 401 || 
+                        error.response?.status === 402 || 
+                        error.response?.status === 403) {
+                        throw new Error(`Proceso detenido: ${errorMessage}`);
+                    }
                 }
             }
 
@@ -398,8 +512,19 @@ class GeneratorLeadsService {
             return results;
 
         } catch (error) {
-            console.error('❌ Error obteniendo contactos de Google:', error.message);
-            throw error;
+            console.error('❌ Error procesando contactos:', error.message);
+            // Asegurarnos de que el error se propague con los resultados parciales
+            return {
+                total: contacts?.length || 0,
+                processed: 0,
+                filtered: 0,
+                contacts: [{
+                    name: 'Error general',
+                    error: error.message,
+                    success: false
+                }],
+                error: error.message
+            };
         }
     }
 

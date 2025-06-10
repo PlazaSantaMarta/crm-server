@@ -203,8 +203,31 @@ router.post('/generate-leads', async (req, res) => {
             logger.info('Procesando todos los contactos');
         }
         
+        // Verificar el estado de la conexión con Kommo primero
+        try {
+            await req.kommoService.verifyConnection();
+        } catch (connectionError) {
+            logger.error('Error en la conexión con Kommo:', connectionError);
+            return res.status(401).json({
+                success: false,
+                message: 'Error en la conexión con Kommo. Por favor, vuelve a iniciar sesión.',
+                error: connectionError.message
+            });
+        }
+        
         // Obtener contactos y generar leads usando el servicio inicializado
         const results = await req.generatorLeads.processGoogleContacts(pipeline_id, contact_ids);
+        
+        // Verificar si hay un error general
+        if (results.error) {
+            logger.error('Error en la generación de leads:', results.error);
+            return res.status(500).json({
+                success: false,
+                message: 'Error en el proceso de generación de leads',
+                error: results.error,
+                results // Incluimos los resultados parciales que podrían existir
+            });
+        }
         
         logger.info('Proceso de generación de leads completado exitosamente');
         res.json({ 
@@ -215,10 +238,31 @@ router.post('/generate-leads', async (req, res) => {
 
     } catch (error) {
         logger.error('Error en la generación de leads:', error);
-        res.status(500).json({ 
+        
+        // Determinar el código de estado apropiado según el tipo de error
+        let statusCode = 500;
+        let errorMessage = error.message;
+        
+        if (error.response) {
+            statusCode = error.response.status;
+            if (error.response.status === 401) {
+                errorMessage = 'Sesión expirada o no autorizada. Por favor, vuelve a iniciar sesión.';
+            } else if (error.response.status === 402) {
+                errorMessage = 'Cuenta con restricciones de pago. Verifica tu suscripción de Kommo.';
+            } else if (error.response.status === 403) {
+                errorMessage = 'No tienes permiso para realizar esta operación.';
+            } else if (error.response.status === 404) {
+                errorMessage = 'Recurso no encontrado. Verifica el ID del pipeline.';
+            } else if (error.response.status === 429) {
+                errorMessage = 'Has excedido el límite de peticiones a la API. Espera unos minutos y vuelve a intentarlo.';
+            }
+        }
+        
+        res.status(statusCode).json({ 
             success: false, 
             message: 'Error en el proceso de generación de leads',
-            error: error.message 
+            error: errorMessage,
+            details: error.response?.data
         });
     }
 });

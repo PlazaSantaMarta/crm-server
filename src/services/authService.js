@@ -275,6 +275,41 @@ class AuthService {
             throw error;
         }
     }
+
+    async initializeUserServices(user) {
+        try {
+            console.log(`\n🔧 Inicializando servicios para usuario: ${user.username}`);
+            
+            if (!user.kommo_credentials) {
+                throw new Error('Usuario no tiene credenciales de Kommo configuradas');
+            }
+            
+            // Inicializar servicios de Kommo
+            const kommoService = new KommoAuthService(user.kommo_credentials);
+            const generatorLeads = new GeneratorLeadsService(user.kommo_credentials);
+            
+            // Guardar servicios en caché para este usuario
+            if (userServices.has(user._id.toString())) {
+                userServices.get(user._id.toString()).kommoService = kommoService;
+                userServices.get(user._id.toString()).generatorLeads = generatorLeads;
+            } else {
+                userServices.set(user._id.toString(), {
+                    kommoService,
+                    generatorLeads
+                });
+            }
+            
+            console.log(`✅ Servicios inicializados correctamente para ${user.username}`);
+            
+            return {
+                kommoService,
+                generatorLeads
+            };
+        } catch (error) {
+            console.error(`❌ Error al inicializar servicios para ${user.username}:`, error);
+            throw error;
+        }
+    }
 }
 
 module.exports = new AuthService(); 
