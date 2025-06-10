@@ -93,18 +93,13 @@ router.post('/logout', verifyJWT, async (req, res) => {
 // Ruta para verificar estado de autenticación
 router.get('/status', verifyJWT, async (req, res) => {
     try {
-        const user = await User.findById(req.user.id).select('-password -refreshToken');
-        
+        // El middleware verifyJWT ya verificó el token y agregó el usuario a req.user
         res.json({
-            authenticated: true,
-            user: {
-                id: user._id,
-                username: user.username,
-                kommo_base_url: user.kommo_credentials.base_url
-            }
+            id: req.user.id,
+            username: req.user.username
         });
     } catch (error) {
-        res.status(500).json({ error: 'Error al verificar estado de autenticación' });
+        res.status(401).json({ error: 'Error al verificar el estado de autenticación' });
     }
 });
 
