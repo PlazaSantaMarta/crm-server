@@ -1,4 +1,5 @@
 const User = require('../models/User');
+const jwt = require('jsonwebtoken');
 const { KommoAuthService } = require('./kommoService');
 const GeneratorLeadsService = require('./generatorLeads');
 
@@ -27,13 +28,23 @@ class AuthService {
 
             await user.save();
             
+            // Generar token JWT
+            const token = this.generateToken(user._id);
+            const refreshToken = this.generateRefreshToken(user._id);
+            
+            // Guardar refresh token
+            user.refreshToken = refreshToken;
+            await user.save();
+            
             return {
                 success: true,
                 user: {
                     id: user._id,
                     username: user.username,
                     kommo_credentials: user.kommo_credentials
-                }
+                },
+                token,
+                refreshToken
             };
         } catch (error) {
             throw error;
@@ -57,7 +68,7 @@ class AuthService {
                 throw new Error('Contraseña incorrecta');
             }
 
-            // Usar una única operación atómica para actualizar todos los usuarios
+            // Mantener compatibilidad con logged
             await User.bulkWrite([
                 {
                     updateMany: {
@@ -72,6 +83,14 @@ class AuthService {
                     }
                 }
             ]);
+
+            // Generar token JWT
+            const token = this.generateToken(user._id);
+            const refreshToken = this.generateRefreshToken(user._id);
+            
+            // Guardar refresh token
+            user.refreshToken = refreshToken;
+            await user.save();
 
             // Recargar el usuario para obtener el estado actualizado
             const updatedUser = await User.findById(user._id);
@@ -107,15 +126,60 @@ class AuthService {
 
             const userData = updatedUser.toObject();
             delete userData.password;
+            delete userData.refreshToken;
 
             return {
                 success: true,
                 user: userData,
+                token,
+                refreshToken,
                 kommo_status: kommoStatus
             };
         } catch (error) {
             console.error('❌ Error en login:', error);
             throw error;
+        }
+    }
+
+    // Método para generar token JWT
+    generateToken(userId) {
+        return jwt.sign(
+            { userId },
+            process.env.JWT_SECRET || 'default_jwt_secret',
+            { expiresIn: '2h' }
+        );
+    }
+    
+    // Método para generar refresh token
+    generateRefreshToken(userId) {
+        return jwt.sign(
+            { userId },
+            process.env.JWT_REFRESH_SECRET || 'default_refresh_secret',
+            { expiresIn: '7d' }
+        );
+    }
+    
+    // Método para renovar token
+    async refreshToken(token) {
+        try {
+            const decoded = jwt.verify(
+                token,
+                process.env.JWT_REFRESH_SECRET || 'default_refresh_secret'
+            );
+            
+            const user = await User.findById(decoded.userId);
+            if (!user || user.refreshToken !== token) {
+                throw new Error('Token de renovación inválido');
+            }
+            
+            const newToken = this.generateToken(user._id);
+            
+            return {
+                success: true,
+                token: newToken
+            };
+        } catch (error) {
+            throw new Error('Error al renovar token: ' + error.message);
         }
     }
 
@@ -162,7 +226,7 @@ class AuthService {
 
     async getUserData(userId) {
         try {
-            const user = await User.findById(userId).select('-password');
+            const user = await User.findById(userId).select('-password -refreshToken');
             if (!user) {
                 throw new Error('Usuario no encontrado');
             }
@@ -184,8 +248,9 @@ class AuthService {
 
             console.log(`👤 Cerrando sesión del usuario: ${user.username}`);
 
-            // Marcar como deslogueado
+            // Marcar como deslogueado y limpiar refresh token
             user.logged = false;
+            user.refreshToken = null;
             await user.save();
 
             // Limpiar servicios

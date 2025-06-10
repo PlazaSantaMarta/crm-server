@@ -57,3 +57,144 @@
 {"level":"info","message":"Request from origin: undefined | Path: /api/contacts/upload","service":"crm-kommo","timestamp":"2025-06-02 17:00:29"}
 {"level":"info","message":"Contactos almacenados en memoria: 3","service":"crm-kommo","timestamp":"2025-06-02 17:00:29"}
 {"level":"info","message":"Procesados 3 contactos desde archivo de texto","service":"crm-kommo","timestamp":"2025-06-02 17:00:29"}
+{"level":"info","message":"Directorio data existe","service":"crm-kommo","timestamp":"2025-06-10 15:09:25"}
+{"level":"error","message":"No hay credenciales válidas para Google","service":"crm-kommo","timestamp":"2025-06-10 15:09:26"}
+{"level":"info","message":"Estado de autenticación global: No autenticado","service":"crm-kommo","timestamp":"2025-06-10 15:09:26"}
+{"level":"info","message":"🔓 Servidor iniciado. Esperando autenticación...","service":"crm-kommo","timestamp":"2025-06-10 15:09:26"}
+{"level":"info","message":"\n🚀 Servidor CRM iniciado\n📍 Puerto: 3000\n🔒 Estado global: Esperando autenticación\n📱 Contactos globales en memoria: 0\n🔐 JWT activado: No (usando secreto por defecto)\n    ","service":"crm-kommo","timestamp":"2025-06-10 15:09:26"}
+{"level":"info","message":"Directorio data existe","service":"crm-kommo","timestamp":"2025-06-10 15:16:39"}
+{"level":"error","message":"No hay credenciales válidas para Google","service":"crm-kommo","timestamp":"2025-06-10 15:16:41"}
+{"level":"info","message":"Estado de autenticación global: No autenticado","service":"crm-kommo","timestamp":"2025-06-10 15:16:41"}
+{"level":"info","message":"🔓 Servidor iniciado. Esperando autenticación...","service":"crm-kommo","timestamp":"2025-06-10 15:16:41"}
+{"level":"info","message":"\n🚀 Servidor CRM iniciado\n📍 Puerto: 3000\n🔒 Estado global: Esperando autenticación\n📱 Contactos globales en memoria: 0\n🔐 JWT activado: No (usando secreto por defecto)\n    ","service":"crm-kommo","timestamp":"2025-06-10 15:16:41"}
+{"level":"info","message":"Request from origin: http://localhost:5173 | Path: /api/contacts","service":"crm-kommo","timestamp":"2025-06-10 15:16:51"}
+{"level":"info","message":"Request from origin: http://localhost:5173 | Path: /api/contacts","service":"crm-kommo","timestamp":"2025-06-10 15:16:51"}
+{"level":"info","message":"Request from origin: http://localhost:5173 | Path: /api/google","service":"crm-kommo","timestamp":"2025-06-10 15:16:57"}
+{"level":"info","message":"Request from origin: http://localhost:5173 | Path: /api/google","service":"crm-kommo","timestamp":"2025-06-10 15:17:08"}
+{"level":"info","message":"Request from origin: http://localhost:5173 | Path: /api/google","service":"crm-kommo","timestamp":"2025-06-10 15:17:18"}
+{"level":"info","message":"Request from origin: http://localhost:5173 | Path: /api/google","service":"crm-kommo","timestamp":"2025-06-10 15:17:20"}
+{"level":"info","message":"Directorio data existe","service":"crm-kommo","timestamp":"2025-06-10 15:28:17"}
+{"level":"error","message":"No hay credenciales válidas para Google","service":"crm-kommo","timestamp":"2025-06-10 15:28:19"}
+{"level":"info","message":"Estado de autenticación global: No autenticado","service":"crm-kommo","timestamp":"2025-06-10 15:28:19"}
+{"level":"info","message":"🔓 Servidor iniciado. Esperando autenticación...","service":"crm-kommo","timestamp":"2025-06-10 15:28:19"}
+{"level":"info","message":"\n🚀 Servidor CRM iniciado\n📍 Puerto: 3000\n🔒 Estado global: Esperando autenticación\n📱 Contactos globales en memoria: 0\n🔐 JWT activado: No (usando secreto por defecto)\n⚠️ MODO COMPATIBLE: JWT opcional para rutas Google\n    ","service":"crm-kommo","timestamp":"2025-06-10 15:28:19"}
+{"level":"info","message":"Directorio data existe","service":"crm-kommo","timestamp":"2025-06-10 15:28:46"}
+{"level":"error","message":"No hay credenciales válidas para Google","service":"crm-kommo","timestamp":"2025-06-10 15:28:47"}
+{"level":"info","message":"Estado de autenticación global: No autenticado","service":"crm-kommo","timestamp":"2025-06-10 15:28:47"}
+{"level":"info","message":"🔓 Servidor iniciado. Esperando autenticación...","service":"crm-kommo","timestamp":"2025-06-10 15:28:48"}
+{"level":"info","message":"\n🚀 Servidor CRM iniciado\n📍 Puerto: 3000\n🔒 Estado global: Esperando autenticación\n📱 Contactos globales en memoria: 0\n🔐 JWT activado: No (usando secreto por defecto)\n⚠️ MODO COMPATIBLE: JWT opcional para rutas Google\n    ","service":"crm-kommo","timestamp":"2025-06-10 15:28:49"}
+{"level":"info","message":"Request from origin: http://localhost:5173 | Path: /api/contacts","service":"crm-kommo","timestamp":"2025-06-10 15:28:49"}
+{"level":"info","message":"Request from origin: http://localhost:5173 | Path: /api/contacts","service":"crm-kommo","timestamp":"2025-06-10 15:28:49"}
+{"level":"info","message":"Request from origin: http://localhost:5173 | Path: /api/google","service":"crm-kommo","timestamp":"2025-06-10 15:28:52"}
+{"level":"info","message":"Request from origin: http://localhost:5173 | Path: /api/contacts","service":"crm-kommo","timestamp":"2025-06-10 15:28:53"}
+{"level":"info","message":"Request from origin: http://localhost:5173 | Path: /api/contacts","service":"crm-kommo","timestamp":"2025-06-10 15:28:56"}
+{"level":"info","message":"Request from origin: http://localhost:5173 | Path: /api/contacts","service":"crm-kommo","timestamp":"2025-06-10 15:28:56"}
+{"level":"info","message":"Request from origin: http://localhost:5173 | Path: /api/auth/login","service":"crm-kommo","timestamp":"2025-06-10 15:29:24"}
+{"level":"info","message":"Request from origin: http://localhost:5173 | Path: /api/auth/login","service":"crm-kommo","timestamp":"2025-06-10 15:29:24"}
+{"level":"info","message":"Request from origin: http://localhost:5173 | Path: /api/contacts","service":"crm-kommo","timestamp":"2025-06-10 15:29:44"}
+{"level":"info","message":"Request from origin: http://localhost:5173 | Path: /api/contacts","service":"crm-kommo","timestamp":"2025-06-10 15:29:44"}
+{"level":"info","message":"Directorio data existe","service":"crm-kommo","timestamp":"2025-06-10 15:38:21"}
+{"level":"error","message":"No hay credenciales válidas para Google","service":"crm-kommo","timestamp":"2025-06-10 15:38:22"}
+{"level":"info","message":"Estado de autenticación global: No autenticado","service":"crm-kommo","timestamp":"2025-06-10 15:38:22"}
+{"level":"info","message":"🔓 Servidor iniciado. Esperando autenticación...","service":"crm-kommo","timestamp":"2025-06-10 15:38:22"}
+{"level":"info","message":"\n🚀 Servidor CRM iniciado\n📍 Puerto: 3000\n🔒 Estado: Esperando autenticación\n📱 Contactos en memoria: 0\n    ","service":"crm-kommo","timestamp":"2025-06-10 15:38:22"}
+{"level":"info","message":"Request from origin: http://localhost:5173 | Path: /api/contacts","service":"crm-kommo","timestamp":"2025-06-10 15:38:30"}
+{"level":"info","message":"Request from origin: http://localhost:5173 | Path: /api/contacts","service":"crm-kommo","timestamp":"2025-06-10 15:38:30"}
+{"level":"info","message":"Request from origin: http://localhost:5173 | Path: /api/google","service":"crm-kommo","timestamp":"2025-06-10 15:38:33"}
+{"level":"info","message":"Request from origin: http://localhost:5173 | Path: /api/contacts","service":"crm-kommo","timestamp":"2025-06-10 15:38:34"}
+{"level":"info","message":"Request from origin: http://localhost:5173 | Path: /api/contacts","service":"crm-kommo","timestamp":"2025-06-10 15:38:38"}
+{"level":"info","message":"Request from origin: http://localhost:5173 | Path: /api/contacts","service":"crm-kommo","timestamp":"2025-06-10 15:38:38"}
+{"level":"info","message":"Request from origin: http://localhost:5173 | Path: /api/google","service":"crm-kommo","timestamp":"2025-06-10 15:38:50"}
+{"level":"info","message":"Request from origin: http://localhost:5173 | Path: /api/contacts","service":"crm-kommo","timestamp":"2025-06-10 15:38:51"}
+{"level":"info","message":"Request from origin: http://localhost:5173 | Path: /api/contacts","service":"crm-kommo","timestamp":"2025-06-10 15:38:55"}
+{"level":"info","message":"Request from origin: http://localhost:5173 | Path: /api/contacts","service":"crm-kommo","timestamp":"2025-06-10 15:38:55"}
+{"level":"info","message":"Directorio data existe","service":"crm-kommo","timestamp":"2025-06-10 15:49:51"}
+{"level":"error","message":"No hay credenciales válidas para Google","service":"crm-kommo","timestamp":"2025-06-10 15:49:52"}
+{"level":"info","message":"Estado de autenticación global: No autenticado","service":"crm-kommo","timestamp":"2025-06-10 15:49:52"}
+{"level":"info","message":"🔓 Servidor iniciado. Esperando autenticación...","service":"crm-kommo","timestamp":"2025-06-10 15:49:52"}
+{"level":"info","message":"\n🚀 Servidor CRM iniciado\n📍 Puerto: 3000\n🔒 Estado: Esperando autenticación\n📱 Contactos en memoria: 0\n    ","service":"crm-kommo","timestamp":"2025-06-10 15:49:52"}
+{"level":"info","message":"Request from origin: http://localhost:5173 | Path: /api/contacts","service":"crm-kommo","timestamp":"2025-06-10 15:49:53"}
+{"level":"info","message":"Request from origin: http://localhost:5173 | Path: /api/contacts","service":"crm-kommo","timestamp":"2025-06-10 15:49:53"}
+{"level":"info","message":"Request from origin: http://localhost:5173 | Path: /api/contacts","service":"crm-kommo","timestamp":"2025-06-10 15:53:14"}
+{"level":"info","message":"Request from origin: http://localhost:5173 | Path: /api/contacts","service":"crm-kommo","timestamp":"2025-06-10 15:53:28"}
+{"level":"info","message":"Request from origin: http://localhost:5173 | Path: /api/contacts","service":"crm-kommo","timestamp":"2025-06-10 15:53:29"}
+{"level":"info","message":"Request from origin: http://localhost:5173 | Path: /api/google","service":"crm-kommo","timestamp":"2025-06-10 15:53:37"}
+{"level":"info","message":"Request from origin: http://localhost:5173 | Path: /api/contacts","service":"crm-kommo","timestamp":"2025-06-10 15:53:37"}
+{"level":"info","message":"Request from origin: http://localhost:5173 | Path: /api/contacts","service":"crm-kommo","timestamp":"2025-06-10 15:53:41"}
+{"level":"info","message":"Request from origin: http://localhost:5173 | Path: /api/contacts","service":"crm-kommo","timestamp":"2025-06-10 15:53:41"}
+{"level":"info","message":"Request from origin: http://localhost:5173 | Path: /api/auth/login","service":"crm-kommo","timestamp":"2025-06-10 15:53:55"}
+{"level":"info","message":"Request from origin: http://localhost:5173 | Path: /api/auth/login","service":"crm-kommo","timestamp":"2025-06-10 15:53:55"}
+{"level":"info","message":"Request from origin: http://localhost:5173 | Path: /api/contacts","service":"crm-kommo","timestamp":"2025-06-10 15:55:07"}
+{"level":"info","message":"Request from origin: http://localhost:5173 | Path: /api/contacts","service":"crm-kommo","timestamp":"2025-06-10 15:55:07"}
+{"level":"info","message":"Request from origin: http://localhost:5173 | Path: /api/auth/login","service":"crm-kommo","timestamp":"2025-06-10 15:55:16"}
+{"level":"info","message":"Request from origin: http://localhost:5173 | Path: /api/auth/login","service":"crm-kommo","timestamp":"2025-06-10 15:55:16"}
+{"level":"info","message":"Request from origin: http://localhost:5173 | Path: /api/google","service":"crm-kommo","timestamp":"2025-06-10 15:55:31"}
+{"level":"info","message":"Request from origin: http://localhost:5173 | Path: /api/google","service":"crm-kommo","timestamp":"2025-06-10 15:55:31"}
+{"level":"info","message":"Request from origin: http://localhost:5173 | Path: /api/contacts","service":"crm-kommo","timestamp":"2025-06-10 15:55:31"}
+{"level":"info","message":"Request from origin: http://localhost:5173 | Path: /api/contacts","service":"crm-kommo","timestamp":"2025-06-10 15:55:31"}
+{"level":"info","message":"Request from origin: http://localhost:5173 | Path: /api/auth/refresh-token","service":"crm-kommo","timestamp":"2025-06-10 15:55:31"}
+{"level":"info","message":"Request from origin: http://localhost:5173 | Path: /api/auth/refresh-token","service":"crm-kommo","timestamp":"2025-06-10 15:55:31"}
+{"level":"info","message":"Request from origin: http://localhost:5173 | Path: /api/contacts","service":"crm-kommo","timestamp":"2025-06-10 15:55:31"}
+{"level":"info","message":"Request from origin: http://localhost:5173 | Path: /api/contacts","service":"crm-kommo","timestamp":"2025-06-10 15:55:35"}
+{"level":"info","message":"Request from origin: http://localhost:5173 | Path: /api/auth/refresh-token","service":"crm-kommo","timestamp":"2025-06-10 15:55:35"}
+{"level":"info","message":"Request from origin: http://localhost:5173 | Path: /api/contacts","service":"crm-kommo","timestamp":"2025-06-10 15:55:35"}
+{"level":"info","message":"Request from origin: http://localhost:5173 | Path: /api/auth/refresh-token","service":"crm-kommo","timestamp":"2025-06-10 15:55:35"}
+{"level":"info","message":"Request from origin: http://localhost:5173 | Path: /api/contacts","service":"crm-kommo","timestamp":"2025-06-10 15:55:35"}
+{"level":"info","message":"Request from origin: http://localhost:5173 | Path: /api/contacts","service":"crm-kommo","timestamp":"2025-06-10 15:55:35"}
+{"level":"info","message":"Directorio data existe","service":"crm-kommo","timestamp":"2025-06-10 16:00:37"}
+{"level":"error","message":"No hay credenciales válidas para Google","service":"crm-kommo","timestamp":"2025-06-10 16:00:39"}
+{"level":"info","message":"Estado de autenticación global: No autenticado","service":"crm-kommo","timestamp":"2025-06-10 16:00:39"}
+{"level":"info","message":"🔓 Servidor iniciado. Esperando autenticación...","service":"crm-kommo","timestamp":"2025-06-10 16:00:39"}
+{"level":"info","message":"\n🚀 Servidor CRM iniciado\n📍 Puerto: 3000\n🔒 Estado: Esperando autenticación\n📱 Contactos en memoria: 0\n    ","service":"crm-kommo","timestamp":"2025-06-10 16:00:39"}
+{"level":"info","message":"Request from origin: http://localhost:5173 | Path: /api/contacts","service":"crm-kommo","timestamp":"2025-06-10 16:00:41"}
+{"level":"info","message":"Request from origin: http://localhost:5173 | Path: /api/contacts","service":"crm-kommo","timestamp":"2025-06-10 16:00:41"}
+{"level":"info","message":"Request from origin: http://localhost:5173 | Path: /api/contacts","service":"crm-kommo","timestamp":"2025-06-10 16:00:41"}
+{"level":"info","message":"Request from origin: http://localhost:5173 | Path: /api/auth/refresh-token","service":"crm-kommo","timestamp":"2025-06-10 16:00:41"}
+{"level":"info","message":"Request from origin: http://localhost:5173 | Path: /api/auth/refresh-token","service":"crm-kommo","timestamp":"2025-06-10 16:00:41"}
+{"level":"info","message":"Request from origin: http://localhost:5173 | Path: /api/contacts","service":"crm-kommo","timestamp":"2025-06-10 16:00:41"}
+{"level":"info","message":"Request from origin: http://localhost:5173 | Path: /api/auth/refresh-token","service":"crm-kommo","timestamp":"2025-06-10 16:00:41"}
+{"level":"info","message":"Request from origin: http://localhost:5173 | Path: /api/contacts","service":"crm-kommo","timestamp":"2025-06-10 16:00:41"}
+{"level":"info","message":"Request from origin: http://localhost:5173 | Path: /api/contacts","service":"crm-kommo","timestamp":"2025-06-10 16:00:42"}
+{"level":"info","message":"Directorio data existe","service":"crm-kommo","timestamp":"2025-06-10 16:15:28"}
+{"level":"error","message":"No hay credenciales válidas para Google","service":"crm-kommo","timestamp":"2025-06-10 16:15:29"}
+{"level":"info","message":"Estado de autenticación global: No autenticado","service":"crm-kommo","timestamp":"2025-06-10 16:15:29"}
+{"level":"info","message":"🔓 Servidor iniciado. Esperando autenticación...","service":"crm-kommo","timestamp":"2025-06-10 16:15:29"}
+{"level":"info","message":"\n🚀 Servidor CRM iniciado\n📍 Puerto: 3000\n🔒 Estado: Esperando autenticación\n📱 Contactos en memoria: 0\n    ","service":"crm-kommo","timestamp":"2025-06-10 16:15:29"}
+{"level":"info","message":"Request from origin: http://localhost:5173 | Path: /api/contacts","service":"crm-kommo","timestamp":"2025-06-10 16:15:41"}
+{"level":"info","message":"Request from origin: http://localhost:5173 | Path: /api/contacts","service":"crm-kommo","timestamp":"2025-06-10 16:15:41"}
+{"level":"info","message":"Directorio data existe","service":"crm-kommo","timestamp":"2025-06-10 16:50:22"}
+{"level":"error","message":"No hay credenciales válidas para Google","service":"crm-kommo","timestamp":"2025-06-10 16:50:23"}
+{"level":"info","message":"Estado de autenticación global: No autenticado","service":"crm-kommo","timestamp":"2025-06-10 16:50:23"}
+{"level":"info","message":"🔓 Servidor iniciado. Esperando autenticación...","service":"crm-kommo","timestamp":"2025-06-10 16:50:23"}
+{"level":"info","message":"\n🚀 Servidor CRM iniciado\n📍 Puerto: 3000\n🔒 Estado: Esperando autenticación\n📱 Contactos en memoria: 0\n    ","service":"crm-kommo","timestamp":"2025-06-10 16:50:23"}
+{"level":"info","message":"Request from origin: http://localhost:5173 | Path: /api/contacts","service":"crm-kommo","timestamp":"2025-06-10 16:50:38"}
+{"level":"info","message":"Request from origin: http://localhost:5173 | Path: /api/contacts","service":"crm-kommo","timestamp":"2025-06-10 16:50:38"}
+{"level":"info","message":"Request from origin: http://localhost:5173 | Path: /api/auth/login","service":"crm-kommo","timestamp":"2025-06-10 16:50:51"}
+{"level":"info","message":"Request from origin: http://localhost:5173 | Path: /api/auth/login","service":"crm-kommo","timestamp":"2025-06-10 16:50:51"}
+{"level":"info","message":"Request from origin: http://localhost:5173 | Path: /api/contacts","service":"crm-kommo","timestamp":"2025-06-10 16:51:38"}
+{"level":"info","message":"Request from origin: http://localhost:5173 | Path: /api/contacts","service":"crm-kommo","timestamp":"2025-06-10 16:51:38"}
+{"level":"info","message":"Request from origin: http://localhost:5173 | Path: /api/contacts","service":"crm-kommo","timestamp":"2025-06-10 16:51:38"}
+{"level":"info","message":"Request from origin: http://localhost:5173 | Path: /api/auth/refresh-token","service":"crm-kommo","timestamp":"2025-06-10 16:51:38"}
+{"level":"info","message":"Request from origin: http://localhost:5173 | Path: /api/auth/refresh-token","service":"crm-kommo","timestamp":"2025-06-10 16:51:38"}
+{"level":"info","message":"Request from origin: http://localhost:5173 | Path: /api/contacts","service":"crm-kommo","timestamp":"2025-06-10 16:51:38"}
+{"level":"info","message":"Request from origin: http://localhost:5173 | Path: /api/auth/refresh-token","service":"crm-kommo","timestamp":"2025-06-10 16:51:38"}
+{"level":"info","message":"Request from origin: http://localhost:5173 | Path: /api/contacts","service":"crm-kommo","timestamp":"2025-06-10 16:51:40"}
+{"level":"info","message":"Request from origin: http://localhost:5173 | Path: /api/contacts","service":"crm-kommo","timestamp":"2025-06-10 16:51:40"}
+{"level":"info","message":"Request from origin: http://localhost:5173 | Path: /api/auth/logout","service":"crm-kommo","timestamp":"2025-06-10 16:51:46"}
+{"level":"info","message":"Request from origin: http://localhost:5173 | Path: /api/auth/logout","service":"crm-kommo","timestamp":"2025-06-10 16:51:49"}
+{"level":"info","message":"Request from origin: http://localhost:5173 | Path: /api/auth/logout","service":"crm-kommo","timestamp":"2025-06-10 16:52:03"}
+{"level":"info","message":"Request from origin: http://localhost:5173 | Path: /api/auth/logout","service":"crm-kommo","timestamp":"2025-06-10 16:52:03"}
+{"level":"info","message":"Request from origin: http://localhost:5173 | Path: /api/contacts","service":"crm-kommo","timestamp":"2025-06-10 16:52:21"}
+{"level":"info","message":"Request from origin: http://localhost:5173 | Path: /api/contacts","service":"crm-kommo","timestamp":"2025-06-10 16:52:22"}
+{"level":"info","message":"Request from origin: http://localhost:5173 | Path: /api/auth/logout","service":"crm-kommo","timestamp":"2025-06-10 16:52:25"}
+{"level":"info","message":"Request from origin: http://localhost:5173 | Path: /api/contacts","service":"crm-kommo","timestamp":"2025-06-10 16:52:31"}
+{"level":"info","message":"Request from origin: http://localhost:5173 | Path: /api/contacts","service":"crm-kommo","timestamp":"2025-06-10 16:52:31"}
+{"level":"info","message":"Request from origin: http://localhost:5173 | Path: /api/auth/logout","service":"crm-kommo","timestamp":"2025-06-10 16:52:37"}
+{"level":"info","message":"Request from origin: http://localhost:5173 | Path: /api/auth/logout","service":"crm-kommo","timestamp":"2025-06-10 16:52:41"}
+{"level":"info","message":"Request from origin: http://localhost:5173 | Path: /api/auth/logout","service":"crm-kommo","timestamp":"2025-06-10 16:52:45"}
+{"level":"info","message":"Request from origin: http://localhost:5173 | Path: /api/auth/logout","service":"crm-kommo","timestamp":"2025-06-10 16:53:12"}
+{"level":"info","message":"Request from origin: http://localhost:5173 | Path: /api/auth/login","service":"crm-kommo","timestamp":"2025-06-10 16:54:35"}
+{"level":"info","message":"Request from origin: http://localhost:5173 | Path: /api/auth/login","service":"crm-kommo","timestamp":"2025-06-10 16:54:35"}
+{"level":"info","message":"Request from origin: http://localhost:5173 | Path: /api/auth/logout","service":"crm-kommo","timestamp":"2025-06-10 16:54:45"}
+{"level":"info","message":"Request from origin: http://localhost:5173 | Path: /api/auth/logout","service":"crm-kommo","timestamp":"2025-06-10 16:54:45"}
+{"level":"info","message":"Request from origin: http://localhost:5173 | Path: /api/auth/logout","service":"crm-kommo","timestamp":"2025-06-10 16:55:16"}
