@@ -121,23 +121,18 @@ class GoogleContactsService {
   }
 
   async getContacts(token) {
-    if (!token) {
-      logger.error('Se requiere token para obtener contactos de Google');
-      throw new Error('Se requiere token para obtener contactos de Google');
-    }
-
-    await this.initialize(token);
-    const cached = serverState.getUserContacts(token);
-    if (cached) return cached;
-
-    const oauth2Client = this.getOAuth2Client(token);
     try {
-      // Si se proporciona un token, usarlo
-      if (token) {
-        oauth2Client.setCredentials({ access_token: token });
+      if (!token) {
+        throw new Error('Se requiere token para obtener contactos');
       }
+
+      // Configurar cliente OAuth2 con el token
+      const oauth2Client = this.getOAuth2Client(token);
+      oauth2Client.setCredentials({ access_token: token });
       
       const service = google.people({ version: 'v1', auth: oauth2Client });
+      logger.info('🔍 Obteniendo contactos de Google...');
+      
       const response = await service.people.connections.list({
         resourceName: 'people/me',
         pageSize: 1000,
@@ -145,22 +140,17 @@ class GoogleContactsService {
       });
       
       const contacts = response.data.connections || [];
-
-      const formatted = contacts
-        .filter(c => c.phoneNumbers && c.phoneNumbers.length > 0)
-        .map(c => ({
-          id: c.resourceName.split('/')[1],
-          googleId: c.resourceName,
-          name: c.names?.[0]?.displayName || 'Sin nombre',
-          phoneNumber: c.phoneNumbers[0].value.replace(/\s+/g, '').replace(/[-\(\)]/g, ''),
-          isValid: false,
-          source: 'google'
-        }));
-
-      serverState.setUserContacts(token, formatted);
-      return formatted;
+      logger.info(`✅ ${contacts.length} contactos obtenidos`);
+      
+      return contacts.map(contact => ({
+        id: contact.resourceName.split('/')[1],
+        name: contact.names?.[0]?.displayName || 'Sin nombre',
+        phoneNumber: contact.phoneNumbers?.[0]?.value?.replace(/\D/g, '') || '',
+        email: contact.emailAddresses?.[0]?.value || '',
+        source: 'google'
+      }));
     } catch (error) {
-      logger.error('Error obteniendo contactos:', error);
+      logger.error('❌ Error obteniendo contactos:', error);
       throw error;
     }
   }

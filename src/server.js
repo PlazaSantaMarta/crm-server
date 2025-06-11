@@ -44,62 +44,58 @@ app.use((req, res, next) => {
 app.use(cors({
   origin: true,  // acepta cualquier origen
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  credentials: true
+  credentials: true,
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin']
 }));
 
 // Responder correctamente a peticiones OPTIONS (preflight)
 app.options('*', cors());
 
+// Middleware para logging de tokens
+app.use((req, res, next) => {
+  const token = req.headers.authorization;
+  logger.info(`📍 Request path: ${req.path}`);
+  logger.info(`🔑 Token presente: ${token ? 'Sí' : 'No'}`);
+  next();
+});
+
 // --- Rutas ---
 app.get('/api/google', (req, res) => {
   try {
-    // Obtener el userId del token JWT
-    const token = req.headers.authorization?.split(' ')[1];
-    let userId;
-    
-    if (token) {
-      try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        userId = decoded.userId;
-      } catch (error) {
-        logger.error('Error al decodificar token:', error);
-      }
-    }
-
-    // Generar URL de autenticación incluso sin userId
-    const url = googleContactsService.getAuthUrl(userId || 'anonymous');
+    const url = googleContactsService.getAuthUrl();
+    logger.info(`🔗 URL de autenticación generada: ${url}`);
     res.json({ authUrl: url });
   } catch (error) {
-    logger.error('Error al generar URL de autenticación:', error);
+    logger.error('❌ Error al generar URL de autenticación:', error);
     res.status(500).json({ error: 'Error al iniciar autenticación' });
   }
 });
 
 app.get('/api/auth/google/callback', async (req, res) => {
   const code = req.query.code;
-  const state = req.query.state;
-
+  
   if (!code) {
-    logger.error('Falta el código de autorización');
+    logger.error('❌ Falta el código de autorización');
     return res.send(`
       <script>
-        window.opener.postMessage('google-auth-error', '*');
+        window.opener.postMessage({ type: 'google-auth-error', error: 'No se recibió código de autorización' }, '*');
         window.close();
       </script>
     `);
   }
 
   try {
-    const result = await googleContactsService.getTokens(code, state);
+    const tokens = await googleContactsService.getTokens(code);
+    logger.info('✅ Tokens de Google obtenidos correctamente');
     
-    // Guardar el token de Google en la respuesta
     res.send(`
       <html>
         <body>
           <script>
             window.opener.postMessage({
               type: 'google-auth-success',
-              token: '${result.token}'
+              token: '${tokens.access_token}',
+              refreshToken: '${tokens.refresh_token}'
             }, '*');
             window.close();
           </script>
@@ -113,10 +109,13 @@ app.get('/api/auth/google/callback', async (req, res) => {
       </html>
     `);
   } catch (error) {
-    logger.error('Error en callback:', error);
+    logger.error('❌ Error en callback:', error);
     res.send(`
       <script>
-        window.opener.postMessage('google-auth-error', '*');
+        window.opener.postMessage({ 
+          type: 'google-auth-error',
+          error: 'Error al procesar la autenticación'
+        }, '*');
         window.close();
       </script>
     `);
