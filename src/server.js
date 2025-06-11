@@ -146,6 +146,9 @@ app.get('/api/auth/status', (req, res) => {
 });
 
 app.get('/api/contacts', async (req, res) => {
+
+  const {userId} = req.body;
+
   try {
     if (!serverState.isAuthenticated) {
       return res.status(401).json({
@@ -154,7 +157,7 @@ app.get('/api/contacts', async (req, res) => {
       });
     }
 
-    const contacts = await googleContactsService.getContacts();
+    const contacts = await googleContactsService.getContacts(userId);
     res.json(contacts);
   } catch (error) {
     logger.error('Error al obtener contactos:', error);

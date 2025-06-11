@@ -61,3 +61,7 @@
 {"level":"info","message":"Directorio data existe","service":"crm-kommo","timestamp":"2025-06-11 17:47:58"}
 {"level":"info","message":"🔐 Servidor iniciado con sesión activa","service":"crm-kommo","timestamp":"2025-06-11 17:47:59"}
 {"level":"info","message":"\n🚀 Servidor CRM iniciado\n📍 Puerto: 3000\n🔒 Estado: Esperando autenticación\n📱 Contactos en memoria: 0\n    ","service":"crm-kommo","timestamp":"2025-06-11 17:47:59"}
+{"level":"info","message":"📁 Directorio de datos base creado/verificado","service":"crm-kommo","timestamp":"2025-06-11 20:51:50"}
+{"level":"info","message":"Directorio data existe","service":"crm-kommo","timestamp":"2025-06-11 20:51:50"}
+{"level":"info","message":"🔐 Servidor iniciado con sesión activa","service":"crm-kommo","timestamp":"2025-06-11 20:51:51"}
+{"level":"info","message":"\n🚀 Servidor CRM iniciado\n📍 Puerto: 3000\n🔒 Estado: Esperando autenticación\n📱 Contactos en memoria: 0\n    ","service":"crm-kommo","timestamp":"2025-06-11 20:51:51"}

@@ -26,7 +26,7 @@ class GoogleContactsService {
     this.userTokens = new Map(); // Almacenar tokens por usuario
   }
 
-  async initialize(userId = null) {
+  async initialize(userId) {
     try {
       console.log('2️⃣ Iniciando initialize con userId:', userId);
       if (userId) {
@@ -273,8 +273,8 @@ class GoogleContactsService {
     return contacts ? contacts.length : 0;
   }
 
-  async getContacts() {
-    await this.initialize();
+  async getContacts(userId) {
+    await this.initialize(userId);
 
     const cached = serverState.getContacts();
     if (cached) return cached;
