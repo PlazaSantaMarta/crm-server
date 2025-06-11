@@ -60,14 +60,17 @@ app.use((req, res, next) => {
 });
 
 // --- Rutas ---
-app.get('/api/google', (req, res) => {
+app.get('/api/google', async (req, res) => {
   try {
-    const url = googleContactsService.getAuthUrl();
+    const url = await googleContactsService.getAuthUrl();
     logger.info(`🔗 URL de autenticación generada: ${url}`);
     res.json({ authUrl: url });
   } catch (error) {
     logger.error('❌ Error al generar URL de autenticación:', error);
-    res.status(500).json({ error: 'Error al iniciar autenticación' });
+    res.status(500).json({ 
+      error: 'Error al iniciar autenticación',
+      details: error.message 
+    });
   }
 });
 
@@ -78,7 +81,10 @@ app.get('/api/auth/google/callback', async (req, res) => {
     logger.error('❌ Falta el código de autorización');
     return res.send(`
       <script>
-        window.opener.postMessage({ type: 'google-auth-error', error: 'No se recibió código de autorización' }, '*');
+        window.opener.postMessage({ 
+          type: 'google-auth-error', 
+          error: 'No se recibió código de autorización' 
+        }, '*');
         window.close();
       </script>
     `);
@@ -114,7 +120,7 @@ app.get('/api/auth/google/callback', async (req, res) => {
       <script>
         window.opener.postMessage({ 
           type: 'google-auth-error',
-          error: 'Error al procesar la autenticación'
+          error: '${error.message}'
         }, '*');
         window.close();
       </script>
