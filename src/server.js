@@ -58,15 +58,16 @@ app.get('/api/google', (req, res) => {
     let userId;
     
     if (token) {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET || 'default_jwt_secret');
-      userId = decoded.userId;
+      try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        userId = decoded.userId;
+      } catch (error) {
+        logger.error('Error al decodificar token:', error);
+      }
     }
 
-    if (!userId) {
-      return res.status(401).json({ error: 'Usuario no autenticado' });
-    }
-
-    const url = googleContactsService.getAuthUrl(userId);
+    // Generar URL de autenticación incluso sin userId
+    const url = googleContactsService.getAuthUrl(userId || 'anonymous');
     res.json({ authUrl: url });
   } catch (error) {
     logger.error('Error al generar URL de autenticación:', error);
@@ -76,7 +77,7 @@ app.get('/api/google', (req, res) => {
 
 app.get('/api/auth/google/callback', async (req, res) => {
   const code = req.query.code;
-  const state = req.query.state; // Google devolverá el userId en el state
+  const state = req.query.state;
 
   if (!code) {
     logger.error('Falta el código de autorización');
@@ -89,12 +90,17 @@ app.get('/api/auth/google/callback', async (req, res) => {
   }
 
   try {
-    await googleContactsService.getTokens(code, state); // state contiene el userId
+    const result = await googleContactsService.getTokens(code, state);
+    
+    // Guardar el token de Google en la respuesta
     res.send(`
       <html>
         <body>
           <script>
-            window.opener.postMessage('google-auth-success', '*');
+            window.opener.postMessage({
+              type: 'google-auth-success',
+              token: '${result.token}'
+            }, '*');
             window.close();
           </script>
           <div style="display: flex; justify-content: center; align-items: center; height: 100vh; font-family: Arial, sans-serif;">

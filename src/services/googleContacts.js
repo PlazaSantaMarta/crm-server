@@ -4,6 +4,7 @@ const serverState = require('../utils/serverState');
 const GoogleToken = require('../models/GoogleToken');
 const connectDB = require('../config/database');
 const fs = require('fs').promises;
+const User = require('../models/User');
 
 const logger = setupLogger();
 
@@ -74,61 +75,94 @@ class GoogleContactsService {
   }
 
   // Obtener tokens específicos para un usuario
-  async getTokens(code, userId) {
-    if (!userId) {
-      logger.error('Se requiere userId para obtener tokens de Google');
-      throw new Error('Se requiere iniciar sesión para conectar con Google');
+  async getTokens(code, state) {
+    if (!state) {
+      logger.error('Se requiere state para obtener tokens de Google');
+      throw new Error('Se requiere state para obtener tokens de Google');
     }
 
     await connectDB();
-    const oauth2Client = this.getOAuth2Client(userId);
-    const { tokens } = await oauth2Client.getToken(code);
-    oauth2Client.setCredentials(tokens);
+    const oauth2Client = this.getOAuth2Client(state);
+    try {
+      const { tokens } = await oauth2Client.getToken(code);
+      oauth2Client.setCredentials(tokens);
+      
+      // Guardar tokens para el usuario específico si hay state
+      if (state && state !== 'anonymous') {
+        await User.findByIdAndUpdate(state, {
+          'google_credentials.access_token': tokens.access_token,
+          'google_credentials.refresh_token': tokens.refresh_token,
+          'google_credentials.expiry_date': tokens.expiry_date
+        });
+      }
+      
+      await GoogleToken.findOneAndUpdate(
+        { userId: state },
+        { 
+          tokens, 
+          userId: state, 
+          lastCode: code, 
+          lastUpdated: new Date(),
+          provider: 'google'
+        },
+        { upsert: true }
+      );
 
-    await GoogleToken.findOneAndUpdate(
-      { userId },
-      { 
-        tokens, 
-        userId, 
-        lastCode: code, 
-        lastUpdated: new Date(),
-        provider: 'google'
-      },
-      { upsert: true }
-    );
-
-    serverState.setUserAuthenticated(userId, true);
-    logger.info(`Tokens guardados para usuario ${userId}`);
-    return tokens;
+      serverState.setUserAuthenticated(state, true);
+      logger.info(`Tokens guardados para usuario ${state}`);
+      return {
+        token: tokens.access_token,
+        refreshToken: tokens.refresh_token
+      };
+    } catch (error) {
+      logger.error('Error obteniendo tokens:', error);
+      throw error;
+    }
   }
 
-  async getContacts(userId) {
-    if (!userId) {
-      logger.error('Se requiere userId para obtener contactos de Google');
-      throw new Error('Se requiere iniciar sesión para acceder a los contactos');
+  async getContacts(token) {
+    if (!token) {
+      logger.error('Se requiere token para obtener contactos de Google');
+      throw new Error('Se requiere token para obtener contactos de Google');
     }
 
-    await this.initialize(userId);
-    const cached = serverState.getUserContacts(userId);
+    await this.initialize(token);
+    const cached = serverState.getUserContacts(token);
     if (cached) return cached;
 
-    const oauth2Client = this.getOAuth2Client(userId);
-    const peopleService = google.people({ version: 'v1', auth: oauth2Client });
-    const contacts = await this.getAllContactPages(peopleService);
+    const oauth2Client = this.getOAuth2Client(token);
+    try {
+      // Si se proporciona un token, usarlo
+      if (token) {
+        oauth2Client.setCredentials({ access_token: token });
+      }
+      
+      const service = google.people({ version: 'v1', auth: oauth2Client });
+      const response = await service.people.connections.list({
+        resourceName: 'people/me',
+        pageSize: 1000,
+        personFields: 'names,phoneNumbers,emailAddresses',
+      });
+      
+      const contacts = response.data.connections || [];
 
-    const formatted = contacts
-      .filter(c => c.phoneNumbers && c.phoneNumbers.length > 0)
-      .map(c => ({
-        id: c.resourceName.split('/')[1],
-        googleId: c.resourceName,
-        name: c.names?.[0]?.displayName || 'Sin nombre',
-        phoneNumber: c.phoneNumbers[0].value.replace(/\s+/g, '').replace(/[-\(\)]/g, ''),
-        isValid: false,
-        source: 'google'
-      }));
+      const formatted = contacts
+        .filter(c => c.phoneNumbers && c.phoneNumbers.length > 0)
+        .map(c => ({
+          id: c.resourceName.split('/')[1],
+          googleId: c.resourceName,
+          name: c.names?.[0]?.displayName || 'Sin nombre',
+          phoneNumber: c.phoneNumbers[0].value.replace(/\s+/g, '').replace(/[-\(\)]/g, ''),
+          isValid: false,
+          source: 'google'
+        }));
 
-    serverState.setUserContacts(userId, formatted);
-    return formatted;
+      serverState.setUserContacts(token, formatted);
+      return formatted;
+    } catch (error) {
+      logger.error('Error obteniendo contactos:', error);
+      throw error;
+    }
   }
 
   async logout(userId) {
