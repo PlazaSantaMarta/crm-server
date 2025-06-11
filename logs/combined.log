@@ -57,3 +57,7 @@
 {"level":"info","message":"Request from origin: undefined | Path: /api/contacts/upload","service":"crm-kommo","timestamp":"2025-06-02 17:00:29"}
 {"level":"info","message":"Contactos almacenados en memoria: 3","service":"crm-kommo","timestamp":"2025-06-02 17:00:29"}
 {"level":"info","message":"Procesados 3 contactos desde archivo de texto","service":"crm-kommo","timestamp":"2025-06-02 17:00:29"}
+{"level":"info","message":"📁 Directorio de datos base creado/verificado","service":"crm-kommo","timestamp":"2025-06-11 17:47:58"}
+{"level":"info","message":"Directorio data existe","service":"crm-kommo","timestamp":"2025-06-11 17:47:58"}
+{"level":"info","message":"🔐 Servidor iniciado con sesión activa","service":"crm-kommo","timestamp":"2025-06-11 17:47:59"}
+{"level":"info","message":"\n🚀 Servidor CRM iniciado\n📍 Puerto: 3000\n🔒 Estado: Esperando autenticación\n📱 Contactos en memoria: 0\n    ","service":"crm-kommo","timestamp":"2025-06-11 17:47:59"}

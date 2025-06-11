@@ -2,6 +2,7 @@ const { google } = require('googleapis');
 const { setupLogger } = require('../utils/logger');
 const serverState = require('../utils/serverState');
 const GoogleToken = require('../models/GoogleToken');
+const User = require('../models/User');
 const connectDB = require('../config/database');
 const fs = require('fs').promises;
 
@@ -56,6 +57,15 @@ class GoogleContactsService {
         await tokenDoc.save();
       }
 
+      const user = await User.findById(userId);
+      if (user) {
+        user.google_credentials = {
+          access_token: token.access_token,
+          refresh_token: token.refresh_token
+        };
+        await user.save();
+      }
+
       this.userTokens.set(userId, token);
       this.oauth2Client.setCredentials(token);
       this.initialized = true;
@@ -97,7 +107,21 @@ class GoogleContactsService {
         nextPageToken = response.data.nextPageToken;
       } while (nextPageToken);
 
-      logger.info(`📞 ${contacts.length} contactos recuperados para usuario ${userId}`);
+      const user = await User.findById(userId);
+      if (user) {
+        const formattedContacts = contacts.map(c => ({
+          id: c.resourceName.split('/')[1],
+          googleId: c.resourceName,
+          name: c.names?.[0]?.displayName || 'Sin nombre',
+          phoneNumber: c.phoneNumbers?.[0]?.value?.replace(/\s+/g, '').replace(/[-\(\)]/g, '') || '',
+          email: c.emailAddresses?.[0]?.value || '',
+          source: 'google'
+        }));
+        user.google_contacts = formattedContacts;
+        await user.save();
+      }
+
+      logger.info(`📞 ${contacts.length} contactos recuperados y actualizados para usuario ${userId}`);
       return contacts;
     } catch (error) {
       logger.error('Error al listar contactos:', error);
@@ -245,12 +269,31 @@ class GoogleContactsService {
     return formatted;
   }
 
-  async logout() {
-    await connectDB();
-    this.initialized = false;
-    serverState.clearState();
-    await GoogleToken.deleteMany();
-    logger.info('Tokens eliminados de MongoDB y sesión cerrada');
+  async logout(userId) {
+    try {
+      await connectDB();
+      
+      await GoogleToken.deleteOne({ userId });
+      
+      const user = await User.findById(userId);
+      if (user) {
+        user.google_credentials = {
+          access_token: null,
+          refresh_token: null
+        };
+        user.google_contacts = [];
+        await user.save();
+      }
+      
+      this.userTokens.delete(userId);
+      this.initialized = false;
+      serverState.clearState();
+      
+      logger.info(`Sesión de Google cerrada para usuario ${userId}`);
+    } catch (error) {
+      logger.error('Error al cerrar sesión:', error);
+      throw error;
+    }
   }
 }
 

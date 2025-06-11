@@ -1,25 +1,47 @@
 const { google } = require('googleapis');
-const GoogleToken = require('@/models/GoogleToken'); // ajustá el path si hace falta
-const connectDB = require('./config/database'); // 👈 Importamos la conexión a MongoDB
-await connectDB();
+const GoogleToken = require('../models/GoogleToken');
+const connectDB = require('./config/database');
+const serverState = require('./utils/serverState');
 
 const SCOPES = ['https://www.googleapis.com/auth/contacts.readonly'];
 
-function getOAuth2Client() {
-  const credentials = {
-    client_id: process.env.GOOGLE_CLIENT_ID,
-    client_secret: process.env.GOOGLE_CLIENT_SECRET,
-    redirect_uri: process.env.GOOGLE_REDIRECT_URI || 'http://localhost:3000/api/auth/google/callback'
-  };
+let oauth2Client = null;
 
-  return new google.auth.OAuth2(
-    credentials.client_id,
-    credentials.client_secret,
-    credentials.redirect_uri
-  );
+function getOAuth2Client() {
+  if (!oauth2Client) {
+    const credentials = {
+      client_id: process.env.GOOGLE_CLIENT_ID,
+      client_secret: process.env.GOOGLE_CLIENT_SECRET,
+      redirect_uri: process.env.GOOGLE_REDIRECT_URI || 'http://localhost:3000/api/auth/google/callback'
+    };
+
+    oauth2Client = new google.auth.OAuth2(
+      credentials.client_id,
+      credentials.client_secret,
+      credentials.redirect_uri
+    );
+  }
+  return oauth2Client;
 }
 
-function generateAuthUrl() {
+async function initialize() {
+  try {
+    await connectDB();
+    const tokenDoc = await GoogleToken.findOne({ provider: 'google' });
+    if (tokenDoc && tokenDoc.tokens) {
+      const oauth2Client = getOAuth2Client();
+      oauth2Client.setCredentials(tokenDoc.tokens);
+      serverState.isAuthenticated = true;
+      return true;
+    }
+    return false;
+  } catch (error) {
+    console.error('Error initializing Google service:', error);
+    return false;
+  }
+}
+
+function getAuthUrl() {
   const oauth2Client = getOAuth2Client();
   return oauth2Client.generateAuthUrl({
     access_type: 'offline',
@@ -28,32 +50,45 @@ function generateAuthUrl() {
   });
 }
 
-async function getContactsByCode(code) {
+async function getTokens(code) {
   const oauth2Client = getOAuth2Client();
 
   try {
-    // Buscar el token por proveedor (un solo documento)
+    const { tokens } = await oauth2Client.getToken(code);
     let tokenDoc = await GoogleToken.findOne({ provider: 'google' });
 
-    if (!tokenDoc || tokenDoc.lastCode !== code) {
-      console.log('Obteniendo nuevos tokens...');
-      const { tokens } = await oauth2Client.getToken(code);
-
-      if (tokenDoc) {
-        tokenDoc.tokens = tokens;
-        tokenDoc.lastCode = code;
-        tokenDoc.lastUpdated = new Date();
-        await tokenDoc.save();
-      } else {
-        tokenDoc = await GoogleToken.create({
-          provider: 'google',
-          tokens,
-          lastCode: code,
-          lastUpdated: new Date()
-        });
-      }
+    if (tokenDoc) {
+      tokenDoc.tokens = tokens;
+      tokenDoc.lastCode = code;
+      tokenDoc.lastUpdated = new Date();
+      await tokenDoc.save();
+    } else {
+      tokenDoc = await GoogleToken.create({
+        provider: 'google',
+        tokens,
+        lastCode: code,
+        lastUpdated: new Date()
+      });
     }
 
+    oauth2Client.setCredentials(tokens);
+    serverState.isAuthenticated = true;
+    return tokens;
+  } catch (error) {
+    console.error('Error getting tokens:', error);
+    throw error;
+  }
+}
+
+async function getContacts() {
+  const oauth2Client = getOAuth2Client();
+  const tokenDoc = await GoogleToken.findOne({ provider: 'google' });
+
+  if (!tokenDoc || !tokenDoc.tokens) {
+    throw new Error('No autenticado');
+  }
+
+  try {
     oauth2Client.setCredentials(tokenDoc.tokens);
 
     // Verificar si expira pronto
@@ -93,16 +128,30 @@ async function getContactsByCode(code) {
   } catch (error) {
     console.error('Error detallado:', error);
 
-    // Si el token es inválido, se borra el doc
     if (error.message.includes('invalid_grant') || error.message.includes('invalid_token')) {
       await GoogleToken.deleteOne({ provider: 'google' });
+      serverState.isAuthenticated = false;
     }
 
     throw error;
   }
 }
 
+async function logout() {
+  try {
+    await GoogleToken.deleteOne({ provider: 'google' });
+    serverState.isAuthenticated = false;
+    oauth2Client = null;
+  } catch (error) {
+    console.error('Error during logout:', error);
+    throw error;
+  }
+}
+
 module.exports = {
-  generateAuthUrl,
-  getContactsByCode,
+  initialize,
+  getAuthUrl,
+  getTokens,
+  getContacts,
+  logout
 };

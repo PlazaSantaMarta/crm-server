@@ -37,7 +37,19 @@ const userSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     },
-    
+    google_credentials: {
+        access_token: {
+            type: String,
+        },
+        refresh_token: {
+            type: String,
+        }
+    },
+    google_contacts: {
+        type: Array,
+        default: []
+    },
+
     createdAt: {
         type: Date,
         default: Date.now
@@ -45,7 +57,7 @@ const userSchema = new mongoose.Schema({
 });
 
 // Middleware para hashear la contraseña antes de guardar
-userSchema.pre('save', async function(next) {
+userSchema.pre('save', async function (next) {
     if (this.isModified('password')) {
         this.password = await bcrypt.hash(this.password, 10);
     }
@@ -53,7 +65,7 @@ userSchema.pre('save', async function(next) {
 });
 
 // Método para comparar contraseñas
-userSchema.methods.comparePassword = async function(candidatePassword) {
+userSchema.methods.comparePassword = async function (candidatePassword) {
     return await bcrypt.compare(candidatePassword, this.password);
 };
 
