@@ -6,44 +6,20 @@ const GeneratorLeadsService = require('../services/generatorLeads');
 const { setupLogger } = require('../utils/logger');
 const User = require('../models/User');
 const authService = require('../services/authService');
-const jwt = require('jsonwebtoken');
 
 const logger = setupLogger();
 
-// Middleware para verificar autenticación JWT y servicios
+// Middleware para verificar autenticación y servicios
 const checkAuth = async (req, res, next) => {
     try {
         console.log('\n🔒 Verificando autenticación...');
         
-        // Extraer token del header Authorization
-        const authHeader = req.headers.authorization;
-        let token;
-        let user;
-        
-        if (authHeader && authHeader.startsWith('Bearer ')) {
-            // Formato: "Bearer TOKEN"
-            token = authHeader.substring(7);
-            
-            try {
-                // Verificar JWT token
-                const decoded = jwt.verify(token, process.env.JWT_SECRET || 'default_jwt_secret');
-                
-                // Buscar usuario por ID
-                user = await User.findById(decoded.userId);
-                console.log('👤 Usuario encontrado por JWT:', user ? user.username : 'ninguno');
-            } catch (jwtError) {
-                console.error('❌ Error al verificar JWT:', jwtError.message);
-            }
-        }
-        
-        // Compatibilidad con el sistema antiguo (buscar usuario logueado)
-        if (!user) {
-            user = await User.findOne({ logged: true });
-            console.log('👤 Usuario encontrado por logged=true:', user ? user.username : 'ninguno');
-        }
+        // Verificar si hay un usuario logueado
+        const user = await User.findOne({ logged: true });
+        console.log('👤 Usuario encontrado:', user ? user.username : 'ninguno');
         
         if (!user) {
-            console.log('❌ No se encontró usuario autenticado');
+            console.log('❌ No se encontró usuario logueado en la base de datos');
             return res.status(401).json({ error: 'Usuario no autenticado. Por favor, inicie sesión.' });
         }
 
@@ -241,60 +217,41 @@ router.get('/connection-status', async (req, res) => {
     }
 });
 
-// Ruta para iniciar sesión con JWT
+// Ruta para iniciar sesión
 router.post('/login', async (req, res) => {
     try {
-        const { username, password } = req.body;
+        const { username } = req.body;
         
         if (!username) {
             return res.status(400).json({ error: 'Se requiere el nombre de usuario' });
         }
-        
-        // Usar authService para el login
-        const loginResult = await authService.login(username, password);
-        
-        // Enviar respuesta con token JWT
-        res.json({
-            success: true,
+
+        const user = await User.findOne({ username });
+        if (!user) {
+            return res.status(401).json({ error: 'Usuario no encontrado' });
+        }
+
+        // Establecer la sesión
+        req.session.username = username;
+
+        // Inicializar servicios
+        const kommoService = new KommoAuthService(user.kommo_credentials);
+        const generatorLeads = new GeneratorLeadsService(user.kommo_credentials);
+
+        // Guardar los servicios inicializados
+        initializedServices.set(username, {
+            kommoService,
+            generatorLeads
+        });
+
+        res.json({ 
+            success: true, 
             message: 'Sesión iniciada correctamente',
-            token: loginResult.token,
-            refreshToken: loginResult.refreshToken,
-            username: loginResult.user.username,
-            userId: loginResult.user._id
+            username
         });
     } catch (error) {
         logger.error('Error en el login:', error);
-        res.status(401).json({ 
-            success: false,
-            error: 'Error al iniciar sesión: ' + error.message
-        });
-    }
-});
-
-// Ruta para renovar token JWT
-router.post('/refresh-token', async (req, res) => {
-    try {
-        const { refreshToken } = req.body;
-        
-        if (!refreshToken) {
-            return res.status(400).json({ 
-                success: false,
-                error: 'Token de renovación no proporcionado' 
-            });
-        }
-        
-        const result = await authService.refreshToken(refreshToken);
-        
-        res.json({
-            success: true,
-            token: result.token
-        });
-    } catch (error) {
-        logger.error('Error al renovar token:', error);
-        res.status(401).json({ 
-            success: false,
-            error: error.message 
-        });
+        res.status(500).json({ error: 'Error al iniciar sesión' });
     }
 });
 

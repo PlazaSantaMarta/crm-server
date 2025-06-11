@@ -33,22 +33,11 @@ const userSchema = new mongoose.Schema({
             required: true
         }
     },
-    google_credentials: {
-        access_token: String,
-        refresh_token: String,
-        expiry_date: Number,
-        client_id: String,
-        client_secret: String,
-        redirect_uri: String
-    },
     logged: {
         type: Boolean,
         default: false
     },
-    refreshToken: {
-        type: String,
-        default: null
-    },
+    
     createdAt: {
         type: Date,
         default: Date.now

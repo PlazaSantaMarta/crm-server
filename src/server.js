@@ -13,7 +13,6 @@ const authRoutes = require('./routes/authRoutes');
 const { setupLogger } = require('./utils/logger');
 const { initializeDataDirectory } = require('./utils/init');
 const serverState = require('./utils/serverState');
-const jwt = require('jsonwebtoken');
 
 const logger = setupLogger();
 const app = express();
@@ -44,65 +43,43 @@ app.use((req, res, next) => {
 app.use(cors({
   origin: true,  // acepta cualquier origen
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  credentials: true,
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin']
+  credentials: true
 }));
 
 // Responder correctamente a peticiones OPTIONS (preflight)
 app.options('*', cors());
 
-// Middleware para logging de tokens
-app.use((req, res, next) => {
-  const token = req.headers.authorization;
-  logger.info(`📍 Request path: ${req.path}`);
-  logger.info(`🔑 Token presente: ${token ? 'Sí' : 'No'}`);
-  next();
-});
-
 // --- Rutas ---
-app.get('/api/google', async (req, res) => {
+app.get('/api/google', (req, res) => {
   try {
-    const url = await googleContactsService.getAuthUrl();
-    logger.info(`🔗 URL de autenticación generada: ${url}`);
+    const url = googleContactsService.getAuthUrl();
     res.json({ authUrl: url });
   } catch (error) {
-    logger.error('❌ Error al generar URL de autenticación:', error);
-    res.status(500).json({ 
-      error: 'Error al iniciar autenticación',
-      details: error.message 
-    });
+    logger.error('Error al generar URL de autenticación:', error);
+    res.status(500).json({ error: 'Error al iniciar autenticación' });
   }
 });
 
 app.get('/api/auth/google/callback', async (req, res) => {
   const code = req.query.code;
-  
+
   if (!code) {
-    logger.error('❌ Falta el código de autorización');
+    logger.error('Falta el código de autorización');
     return res.send(`
       <script>
-        window.opener.postMessage({ 
-          type: 'google-auth-error', 
-          error: 'No se recibió código de autorización' 
-        }, '*');
+        window.opener.postMessage('google-auth-error', '*');
         window.close();
       </script>
     `);
   }
 
   try {
-    const tokens = await googleContactsService.getTokens(code);
-    logger.info('✅ Tokens de Google obtenidos correctamente');
-    
+    await googleContactsService.getTokens(code);
     res.send(`
       <html>
         <body>
           <script>
-            window.opener.postMessage({
-              type: 'google-auth-success',
-              token: '${tokens.access_token}',
-              refreshToken: '${tokens.refresh_token}'
-            }, '*');
+            window.opener.postMessage('google-auth-success', '*');
             window.close();
           </script>
           <div style="display: flex; justify-content: center; align-items: center; height: 100vh; font-family: Arial, sans-serif;">
@@ -115,13 +92,10 @@ app.get('/api/auth/google/callback', async (req, res) => {
       </html>
     `);
   } catch (error) {
-    logger.error('❌ Error en callback:', error);
+    logger.error('Error en callback:', error);
     res.send(`
       <script>
-        window.opener.postMessage({ 
-          type: 'google-auth-error',
-          error: '${error.message}'
-        }, '*');
+        window.opener.postMessage('google-auth-error', '*');
         window.close();
       </script>
     `);
@@ -130,20 +104,7 @@ app.get('/api/auth/google/callback', async (req, res) => {
 
 app.post('/api/google/logout', async (req, res) => {
   try {
-    // Obtener el userId del token JWT
-    const token = req.headers.authorization?.split(' ')[1];
-    let userId;
-    
-    if (token) {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      userId = decoded.userId;
-    }
-
-    if (!userId) {
-      return res.status(401).json({ error: 'Usuario no autenticado' });
-    }
-
-    await googleContactsService.logout(userId);
+    await googleContactsService.logout();
     res.json({ message: 'Sesión de Google cerrada exitosamente' });
   } catch (error) {
     logger.error('Error al cerrar sesión de Google:', error);

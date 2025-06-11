@@ -2,7 +2,6 @@ const express = require('express');
 const router = express.Router();
 const authService = require('../services/authService');
 const User = require('../models/User');
-const { verifyJWT, getCurrentUser } = require('../middlewares/auth');
 
 // Middleware para validar los datos de registro
 const validateRegistration = (req, res, next) => {
@@ -34,6 +33,20 @@ const validateRegistration = (req, res, next) => {
     next();
 };
 
+// Middleware para verificar usuario actual
+const getCurrentUser = async (req, res, next) => {
+    try {
+        const user = await User.findOne({ logged: true });
+        if (!user) {
+            return res.status(401).json({ error: 'No hay usuario autenticado' });
+        }
+        req.currentUser = user;
+        next();
+    } catch (error) {
+        res.status(500).json({ error: 'Error al verificar usuario actual' });
+    }
+};
+
 // Ruta de registro
 router.post('/register', validateRegistration, async (req, res) => {
     try {
@@ -62,26 +75,11 @@ router.post('/login', async (req, res) => {
     }
 });
 
-// Ruta de renovación de token
-router.post('/refresh-token', async (req, res) => {
-    try {
-        const { refreshToken } = req.body;
-        if (!refreshToken) {
-            return res.status(400).json({ error: 'Token de renovación requerido' });
-        }
-        
-        const result = await authService.refreshToken(refreshToken);
-        res.json(result);
-    } catch (error) {
-        res.status(401).json({ error: error.message });
-    }
-});
-
 // Ruta de logout
-router.post('/logout', verifyJWT, async (req, res) => {
+router.post('/logout', getCurrentUser, async (req, res) => {
     try {
-        console.log(`🔄 Iniciando cierre de sesión para usuario: ${req.user.username}`);
-        const result = await authService.logout(req.user.id);
+        console.log(`🔄 Iniciando cierre de sesión para usuario: ${req.currentUser.username}`);
+        const result = await authService.logout(req.currentUser._id);
         console.log('🎉 Sesión cerrada exitosamente');
         res.json(result);
     } catch (error) {
@@ -91,22 +89,9 @@ router.post('/logout', verifyJWT, async (req, res) => {
 });
 
 // Ruta para verificar estado de autenticación
-router.get('/status', verifyJWT, async (req, res) => {
+router.get('/status', async (req, res) => {
     try {
-        // El middleware verifyJWT ya verificó el token y agregó el usuario a req.user
-        res.json({
-            id: req.user.id,
-            username: req.user.username
-        });
-    } catch (error) {
-        res.status(401).json({ error: 'Error al verificar el estado de autenticación' });
-    }
-});
-
-// Ruta para verificar estado de autenticación (compatible con versión anterior)
-router.get('/status-legacy', async (req, res) => {
-    try {
-        const user = await User.findOne({ logged: true }).select('-password -refreshToken');
+        const user = await User.findOne({ logged: true }).select('-password');
         if (!user) {
             return res.json({ 
                 authenticated: false,
