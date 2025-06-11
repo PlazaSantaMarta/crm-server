@@ -8,25 +8,35 @@ const logger = setupLogger();
 
 // Ruta para iniciar autenticación con Google
 router.get('/auth/google', (req, res) => {
+  console.log('7️⃣ Iniciando autenticación con Google');
   const authUrl = googleContactsService.getAuthUrl();
+  console.log('7️⃣ URL de autenticación generada:', authUrl);
   res.json({ authUrl });
 });
 
 // Callback de Google OAuth
 router.get('/auth/google/callback', async (req, res) => {
   try {
+    console.log('8️⃣ Recibiendo callback de Google');
     const { code } = req.query;
+    console.log('8️⃣ Código recibido:', code);
+    
     const tokens = await googleContactsService.getTokens(code);
+    console.log('8️⃣ Tokens obtenidos:', tokens ? 'Sí' : 'No');
+    
     const contacts = await googleContactsService.getContacts();
+    console.log('8️⃣ Contactos obtenidos:', contacts.length);
     
     // Guardar contactos en el archivo JSON
     for (const contact of contacts) {
       await storageService.saveContact(contact);
     }
+    console.log('8️⃣ Contactos guardados en storage');
 
     // Redireccionar al frontend con un mensaje de éxito
     res.redirect(`${process.env.BACK_URI}?auth=success`);
   } catch (error) {
+    console.log('8️⃣ Error en callback:', error);
     logger.error('Error en callback de Google:', error);
     // Redireccionar al frontend con un mensaje de error
     res.redirect(`${process.env.BACK_URI}auth=error`);

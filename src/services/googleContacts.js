@@ -12,6 +12,10 @@ const SCOPES = ['https://www.googleapis.com/auth/contacts.readonly'];
 
 class GoogleContactsService {
   constructor() {
+    console.log('1️⃣ Iniciando GoogleContactsService');
+    console.log('1️⃣ CLIENT_ID:', process.env.GOOGLE_CLIENT_ID);
+    console.log('1️⃣ REDIRECT_URI:', process.env.GOOGLE_REDIRECT_URI);
+    
     this.oauth2Client = new google.auth.OAuth2(
       process.env.GOOGLE_CLIENT_ID,
       process.env.GOOGLE_CLIENT_SECRET,
@@ -24,8 +28,10 @@ class GoogleContactsService {
 
   async initialize(userId = null) {
     try {
+      console.log('2️⃣ Iniciando initialize con userId:', userId);
       if (userId) {
         const token = await GoogleToken.findOne({ userId });
+        console.log('2️⃣ Token encontrado:', token ? 'Sí' : 'No');
         if (token) {
           this.userTokens.set(userId, token.token);
           this.oauth2Client.setCredentials(token.token);
@@ -37,6 +43,7 @@ class GoogleContactsService {
       this.initialized = false;
       return false;
     } catch (error) {
+      console.log('2️⃣ Error en initialize:', error);
       logger.error('Error al inicializar Google Contacts:', error);
       throw error;
     }
@@ -44,12 +51,17 @@ class GoogleContactsService {
 
   async saveToken(token, userId) {
     try {
+      console.log('3️⃣ Guardando token para usuario:', userId);
+      console.log('3️⃣ Token recibido:', token);
+      
       let tokenDoc = await GoogleToken.findOne({ userId });
       
       if (tokenDoc) {
+        console.log('3️⃣ Actualizando token existente');
         tokenDoc.token = token;
         await tokenDoc.save();
       } else {
+        console.log('3️⃣ Creando nuevo token');
         tokenDoc = new GoogleToken({
           userId,
           token
@@ -58,6 +70,7 @@ class GoogleContactsService {
       }
 
       const user = await User.findById(userId);
+      console.log('3️⃣ Usuario encontrado:', user ? 'Sí' : 'No');
       if (user) {
         user.google_credentials = {
           access_token: token.access_token,
@@ -73,6 +86,7 @@ class GoogleContactsService {
       logger.info(`Token de Google guardado para usuario ${userId}`);
       return true;
     } catch (error) {
+      console.log('3️⃣ Error en saveToken:', error);
       logger.error('Error al guardar token de Google:', error);
       throw error;
     }
@@ -80,14 +94,18 @@ class GoogleContactsService {
 
   async listContacts(userId) {
     try {
+      console.log('4️⃣ Listando contactos para usuario:', userId);
       if (!this.userTokens.has(userId)) {
+        console.log('4️⃣ Token no encontrado en memoria, intentando inicializar');
         await this.initialize(userId);
       }
 
       if (!this.initialized) {
+        console.log('4️⃣ Servicio no inicializado');
         throw new Error('Servicio no inicializado');
       }
 
+      console.log('4️⃣ Obteniendo contactos de Google');
       const service = google.people({ version: 'v1', auth: this.oauth2Client });
       const contacts = [];
       let nextPageToken = null;
@@ -107,6 +125,8 @@ class GoogleContactsService {
         nextPageToken = response.data.nextPageToken;
       } while (nextPageToken);
 
+      console.log('4️⃣ Contactos obtenidos:', contacts.length);
+
       const user = await User.findById(userId);
       if (user) {
         const formattedContacts = contacts.map(c => ({
@@ -119,29 +139,37 @@ class GoogleContactsService {
         }));
         user.google_contacts = formattedContacts;
         await user.save();
+        console.log('4️⃣ Contactos guardados en usuario');
       }
 
       logger.info(`📞 ${contacts.length} contactos recuperados y actualizados para usuario ${userId}`);
       return contacts;
     } catch (error) {
+      console.log('4️⃣ Error en listContacts:', error);
       logger.error('Error al listar contactos:', error);
       throw error;
     }
   }
 
   getAuthUrl() {
-    return this.oauth2Client.generateAuthUrl({
+    console.log('5️⃣ Generando URL de autenticación');
+    const url = this.oauth2Client.generateAuthUrl({
       access_type: 'offline',
       scope: SCOPES,
       prompt: 'consent'
     });
+    console.log('5️⃣ URL generada:', url);
+    return url;
   }
 
   async getToken(code) {
     try {
+      console.log('6️⃣ Obteniendo token con código:', code);
       const { tokens } = await this.oauth2Client.getToken(code);
+      console.log('6️⃣ Token obtenido:', tokens ? 'Sí' : 'No');
       return tokens;
     } catch (error) {
+      console.log('6️⃣ Error en getToken:', error);
       logger.error('Error al obtener token:', error);
       throw error;
     }
