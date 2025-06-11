@@ -2,23 +2,13 @@ const axios = require('axios');
 const googleContactsService = require('./googleContacts');
 
 class GeneratorLeadsService {
-    constructor(userCredentials = null) {
-        if (!userCredentials) {
-            throw new Error('Se requieren credenciales de usuario');
-        }
-
-        this.clientId = userCredentials.client_id;
-        this.clientSecret = userCredentials.client_secret;
-        this.redirectUri = userCredentials.redirect_uri;
-        this.baseUrl = userCredentials.base_url;
-        this.authToken = userCredentials.auth_token;
-
+    constructor(credentials = null) {
         console.log('\n📦 Iniciando GeneratorLeadsService');
         this.customFields = null; // Para almacenar los IDs de campos
-        if (userCredentials) {
+        if (credentials) {
             console.log('✨ Credenciales recibidas:');
-            console.log(JSON.stringify(userCredentials, null, 2));
-            this.updateCredentials(userCredentials);
+            console.log(JSON.stringify(credentials, null, 2));
+            this.updateCredentials(credentials);
         } else {
             console.log('⚠️ No se recibieron credenciales');
         }
@@ -325,30 +315,30 @@ class GeneratorLeadsService {
     }
 
     // 📱 Obtener contactos de Google y procesarlos
-    async processGoogleContacts(userId, pipeline_id, selectedContactIds = null) {
-        console.log('\n🔄 Iniciando procesamiento de contactos de Google...');
-        
-        const Contact = require('../models/Contact');
-        let contacts;
-
+    async processGoogleContacts(pipeline_id, selectedContactIds = null) {
         try {
-            if (selectedContactIds && selectedContactIds.length > 0) {
-                console.log('🎯 Filtrando contactos seleccionados');
-                contacts = await Contact.find({
-                    userId,
-                    _id: { $in: selectedContactIds }
-                });
-                console.log(`✅ Se procesarán ${contacts.length} contactos`);
-            } else {
-                console.log('📋 Obteniendo todos los contactos');
-                contacts = await Contact.find({ userId });
-                console.log(`✅ Se procesarán ${contacts.length} contactos`);
+            if (!pipeline_id) {
+                throw new Error('Se requiere especificar el ID del pipeline (embudo de ventas)');
             }
 
+            // Obtener contactos de Google
+            console.log('🔍 Obteniendo contactos de Google...');
+            let contacts = await googleContactsService.getContacts();
+            
+            // Filtrar contactos si hay selección específica
+            if (selectedContactIds && selectedContactIds.length > 0) {
+                console.log(`🎯 Filtrando ${selectedContactIds.length} contactos seleccionados`);
+                contacts = contacts.filter(contact => selectedContactIds.includes(contact.id));
+            }
+            
+            console.log(`✅ Se procesarán ${contacts.length} contactos`);
+
             const results = {
+                total: contacts.length,
                 processed: 0,
                 filtered: 0,
-                contacts: []
+                contacts: [],
+                pipeline_id: pipeline_id
             };
 
             // Procesar cada contacto
@@ -366,11 +356,11 @@ class GeneratorLeadsService {
                         continue;
                     }
 
-                    // Crear el contacto en Kommo
+                    // Crear el contacto
                     const contactId = await this.createContact({
                         name: contact.name,
                         phone: contact.phoneNumber,
-                        email: contact.email
+                        email: null
                     });
 
                     // Crear el lead asociado al contacto
@@ -388,8 +378,8 @@ class GeneratorLeadsService {
 
                     results.processed++;
                     
-                    // Esperar entre cada contacto para no sobrecargar la API
-                    await new Promise(resolve => setTimeout(resolve, 120000)); // 2 minutos
+                    // Esperar 1 segundo entre cada contacto para no sobrecargar la API
+                    await new Promise(resolve => setTimeout(resolve, 120000)); //milisegundos = 2 minutos
                 } catch (error) {
                     console.error(`❌ Error procesando contacto ${contact.name}:`, error.message);
                     results.contacts.push({
@@ -400,9 +390,15 @@ class GeneratorLeadsService {
                 }
             }
 
+            console.log(`✨ Proceso completado:
+                - Total contactos: ${results.total}
+                - Procesados exitosamente: ${results.processed}
+                - Filtrados: ${results.filtered}
+                ${selectedContactIds ? '- Modo: Contactos seleccionados' : '- Modo: Todos los contactos'}`);
             return results;
+
         } catch (error) {
-            console.error('❌ Error general procesando contactos:', error);
+            console.error('❌ Error obteniendo contactos de Google:', error.message);
             throw error;
         }
     }

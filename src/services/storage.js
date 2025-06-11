@@ -1,27 +1,61 @@
+const fs = require('fs').promises;
+const path = require('path');
 const { setupLogger } = require('../utils/logger');
-const Contact = require('../models/Contact');
 
 const logger = setupLogger();
+const CONTACTS_FILE = path.join(__dirname, '../../data/contacts.json');
 
 class StorageService {
-  async readContacts(userId) {
+  constructor() {
+    this.ensureDataDirectory();
+  }
+
+  async ensureDataDirectory() {
     try {
-      return await Contact.find({ userId }).sort({ createdAt: -1 });
+      const dataDir = path.dirname(CONTACTS_FILE);
+      await fs.mkdir(dataDir, { recursive: true });
     } catch (error) {
+      logger.error('Error al crear directorio de datos:', error);
+    }
+  }
+
+  async readContacts() {
+    try {
+      const data = await fs.readFile(CONTACTS_FILE, 'utf8');
+      return JSON.parse(data || '[]');
+    } catch (error) {
+      if (error.code === 'ENOENT') {
+        // Si el archivo no existe, retornar un array vacío
+        return [];
+      }
       logger.error('Error al leer contactos:', error);
       throw error;
     }
   }
 
-  async saveContact(userId, contactData) {
+  async saveContact(contact) {
     try {
-      const contact = new Contact({
-        ...contactData,
-        userId,
-        updatedAt: new Date()
-      });
+      const contacts = await this.readContacts();
+      const existingIndex = contacts.findIndex(c => c.googleId === contact.googleId);
 
-      await contact.save();
+      if (existingIndex >= 0) {
+        // Actualizar contacto existente manteniendo algunos campos
+        contacts[existingIndex] = {
+          ...contacts[existingIndex],
+          ...contact,
+          updatedAt: new Date().toISOString()
+        };
+      } else {
+        // Agregar nuevo contacto
+        contacts.push({
+          ...contact,
+          id: contact.googleId,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        });
+      }
+
+      await fs.writeFile(CONTACTS_FILE, JSON.stringify(contacts, null, 2));
       logger.info(`Contacto ${contact.name} guardado correctamente`);
       return contact;
     } catch (error) {
@@ -30,45 +64,36 @@ class StorageService {
     }
   }
 
-  async findContactById(userId, contactId) {
+  async findContactById(id) {
     try {
-      return await Contact.findOne({ _id: contactId, userId });
+      const contacts = await this.readContacts();
+      return contacts.find(contact => contact.id === id || contact.googleId === id);
     } catch (error) {
       logger.error('Error al buscar contacto:', error);
       throw error;
     }
   }
 
-  async updateContact(userId, contactId, updates) {
+  async updateContact(id, updates) {
     try {
-      const contact = await Contact.findOneAndUpdate(
-        { _id: contactId, userId },
-        { ...updates, updatedAt: new Date() },
-        { new: true }
-      );
-
-      if (!contact) {
+      const contacts = await this.readContacts();
+      const index = contacts.findIndex(contact => contact.id === id || contact.googleId === id);
+      
+      if (index === -1) {
         return null;
       }
 
-      logger.info(`Contacto ${contactId} actualizado correctamente`);
-      return contact;
+      contacts[index] = {
+        ...contacts[index],
+        ...updates,
+        updatedAt: new Date().toISOString()
+      };
+
+      await fs.writeFile(CONTACTS_FILE, JSON.stringify(contacts, null, 2));
+      logger.info(`Contacto ${id} actualizado correctamente`);
+      return contacts[index];
     } catch (error) {
       logger.error('Error al actualizar contacto:', error);
-      throw error;
-    }
-  }
-
-  async deleteUserContacts(userId, source = null) {
-    try {
-      const query = { userId };
-      if (source) {
-        query.source = source;
-      }
-      await Contact.deleteMany(query);
-      logger.info(`Contactos eliminados para usuario ${userId}`);
-    } catch (error) {
-      logger.error('Error al eliminar contactos:', error);
       throw error;
     }
   }
