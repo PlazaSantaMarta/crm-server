@@ -1,8 +1,8 @@
 const { google } = require('googleapis');
 const { setupLogger } = require('../utils/logger');
 const serverState = require('../utils/serverState');
-const GoogleToken = require('../models/GoogleToken'); // Ruta relativa
-const connectDB = require('../config/database'); // Conexión a MongoDB
+const GoogleToken = require('../models/GoogleToken');
+const connectDB = require('../config/database');
 const fs = require('fs').promises;
 
 const logger = setupLogger();
@@ -18,52 +18,124 @@ class GoogleContactsService {
     );
     this.initialized = false;
     this.pageSize = 100;
+    this.userTokens = new Map(); // Almacenar tokens por usuario
   }
 
-  async initialize() {
-    if (this.initialized) return;
-
-    await connectDB();
-
-    const tokenDoc = await GoogleToken.findOne();
-
-    if (!tokenDoc || !tokenDoc.tokens) {
-      logger.error('No hay credenciales válidas para Google');
-      serverState.setAuthenticated(false);
-      throw new Error('No hay credenciales válidas. Por favor, autentícate nuevamente.');
+  async initialize(userId = null) {
+    try {
+      if (userId) {
+        const token = await GoogleToken.findOne({ userId });
+        if (token) {
+          this.userTokens.set(userId, token.token);
+          this.oauth2Client.setCredentials(token.token);
+          this.initialized = true;
+          logger.info(`🔐 Servicio de Google Contacts inicializado para usuario ${userId}`);
+          return true;
+        }
+      }
+      this.initialized = false;
+      return false;
+    } catch (error) {
+      logger.error('Error al inicializar Google Contacts:', error);
+      throw error;
     }
+  }
 
-    this.oauth2Client.setCredentials(tokenDoc.tokens);
-    this.initialized = true;
-    serverState.setAuthenticated(true);
-    logger.info('Credenciales de Google cargadas desde MongoDB');
+  async saveToken(token, userId) {
+    try {
+      let tokenDoc = await GoogleToken.findOne({ userId });
+      
+      if (tokenDoc) {
+        tokenDoc.token = token;
+        await tokenDoc.save();
+      } else {
+        tokenDoc = new GoogleToken({
+          userId,
+          token
+        });
+        await tokenDoc.save();
+      }
+
+      this.userTokens.set(userId, token);
+      this.oauth2Client.setCredentials(token);
+      this.initialized = true;
+      
+      logger.info(`Token de Google guardado para usuario ${userId}`);
+      return true;
+    } catch (error) {
+      logger.error('Error al guardar token de Google:', error);
+      throw error;
+    }
+  }
+
+  async listContacts(userId) {
+    try {
+      if (!this.userTokens.has(userId)) {
+        await this.initialize(userId);
+      }
+
+      if (!this.initialized) {
+        throw new Error('Servicio no inicializado');
+      }
+
+      const service = google.people({ version: 'v1', auth: this.oauth2Client });
+      const contacts = [];
+      let nextPageToken = null;
+
+      do {
+        const response = await service.people.connections.list({
+          resourceName: 'people/me',
+          pageSize: this.pageSize,
+          pageToken: nextPageToken,
+          personFields: 'names,emailAddresses,phoneNumbers',
+        });
+
+        if (response.data.connections) {
+          contacts.push(...response.data.connections);
+        }
+
+        nextPageToken = response.data.nextPageToken;
+      } while (nextPageToken);
+
+      logger.info(`📞 ${contacts.length} contactos recuperados para usuario ${userId}`);
+      return contacts;
+    } catch (error) {
+      logger.error('Error al listar contactos:', error);
+      throw error;
+    }
   }
 
   getAuthUrl() {
     return this.oauth2Client.generateAuthUrl({
       access_type: 'offline',
-      prompt: 'consent',
       scope: SCOPES,
+      prompt: 'consent'
     });
   }
 
-  async getTokens(code) {
-    await connectDB();
+  async getToken(code) {
+    try {
+      const { tokens } = await this.oauth2Client.getToken(code);
+      return tokens;
+    } catch (error) {
+      logger.error('Error al obtener token:', error);
+      throw error;
+    }
+  }
 
-    const { tokens } = await this.oauth2Client.getToken(code);
-    this.oauth2Client.setCredentials(tokens);
-
-    await GoogleToken.findOneAndUpdate(
-      {},
-      { tokens, lastCode: code, lastUpdated: new Date() },
-      { upsert: true }
-    );
-
-    this.initialized = true;
-    serverState.setAuthenticated(true);
-    logger.info('Tokens guardados en MongoDB correctamente');
-
-    return tokens;
+  async revokeToken(userId) {
+    try {
+      if (this.userTokens.has(userId)) {
+        await this.oauth2Client.revokeToken(this.userTokens.get(userId).access_token);
+        this.userTokens.delete(userId);
+        await GoogleToken.deleteOne({ userId });
+        this.initialized = false;
+        logger.info(`Token revocado para usuario ${userId}`);
+      }
+    } catch (error) {
+      logger.error('Error al revocar token:', error);
+      throw error;
+    }
   }
 
   async getAllContactPages(peopleService, pageToken = null, allContacts = []) {

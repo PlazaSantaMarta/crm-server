@@ -3,100 +3,101 @@ const path = require('path');
 const { setupLogger } = require('../utils/logger');
 
 const logger = setupLogger();
-const CONTACTS_FILE = path.join(__dirname, '../../data/contacts.json');
 
 class StorageService {
   constructor() {
+    this.baseDataDir = path.join(__dirname, '../../data');
     this.ensureDataDirectory();
   }
 
   async ensureDataDirectory() {
     try {
-      const dataDir = path.dirname(CONTACTS_FILE);
-      await fs.mkdir(dataDir, { recursive: true });
+      await fs.mkdir(this.baseDataDir, { recursive: true });
+      logger.info('📁 Directorio de datos base creado/verificado');
     } catch (error) {
       logger.error('Error al crear directorio de datos:', error);
-    }
-  }
-
-  async readContacts() {
-    try {
-      const data = await fs.readFile(CONTACTS_FILE, 'utf8');
-      return JSON.parse(data || '[]');
-    } catch (error) {
-      if (error.code === 'ENOENT') {
-        // Si el archivo no existe, retornar un array vacío
-        return [];
-      }
-      logger.error('Error al leer contactos:', error);
       throw error;
     }
   }
 
-  async saveContact(contact) {
+  async getUserDataPath(userId) {
+    const userDir = path.join(this.baseDataDir, `user_${userId}`);
+    await fs.mkdir(userDir, { recursive: true });
+    return userDir;
+  }
+
+  async saveContacts(contacts, userId) {
     try {
-      const contacts = await this.readContacts();
-      const existingIndex = contacts.findIndex(c => c.googleId === contact.googleId);
-
-      if (existingIndex >= 0) {
-        // Actualizar contacto existente manteniendo algunos campos
-        contacts[existingIndex] = {
-          ...contacts[existingIndex],
-          ...contact,
-          updatedAt: new Date().toISOString()
-        };
-      } else {
-        // Agregar nuevo contacto
-        contacts.push({
-          ...contact,
-          id: contact.googleId,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
-        });
-      }
-
-      await fs.writeFile(CONTACTS_FILE, JSON.stringify(contacts, null, 2));
-      logger.info(`Contacto ${contact.name} guardado correctamente`);
-      return contact;
+      const userDir = await this.getUserDataPath(userId);
+      const contactsFile = path.join(userDir, 'contacts.json');
+      await fs.writeFile(contactsFile, JSON.stringify(contacts, null, 2));
+      logger.info(`💾 Contactos guardados para usuario ${userId}`);
+      return true;
     } catch (error) {
-      logger.error('Error al guardar contacto:', error);
+      logger.error('Error al guardar contactos:', error);
       throw error;
     }
   }
 
-  async findContactById(id) {
+  async loadContacts(userId) {
     try {
-      const contacts = await this.readContacts();
-      return contacts.find(contact => contact.id === id || contact.googleId === id);
-    } catch (error) {
-      logger.error('Error al buscar contacto:', error);
-      throw error;
-    }
-  }
-
-  async updateContact(id, updates) {
-    try {
-      const contacts = await this.readContacts();
-      const index = contacts.findIndex(contact => contact.id === id || contact.googleId === id);
+      const userDir = await this.getUserDataPath(userId);
+      const contactsFile = path.join(userDir, 'contacts.json');
       
-      if (index === -1) {
-        return null;
+      try {
+        const data = await fs.readFile(contactsFile, 'utf8');
+        const contacts = JSON.parse(data);
+        logger.info(`📖 Contactos cargados para usuario ${userId}`);
+        return contacts;
+      } catch (error) {
+        if (error.code === 'ENOENT') {
+          logger.info(`No hay archivo de contactos para usuario ${userId}, retornando array vacío`);
+          return [];
+        }
+        throw error;
       }
-
-      contacts[index] = {
-        ...contacts[index],
-        ...updates,
-        updatedAt: new Date().toISOString()
-      };
-
-      await fs.writeFile(CONTACTS_FILE, JSON.stringify(contacts, null, 2));
-      logger.info(`Contacto ${id} actualizado correctamente`);
-      return contacts[index];
     } catch (error) {
-      logger.error('Error al actualizar contacto:', error);
+      logger.error('Error al cargar contactos:', error);
+      throw error;
+    }
+  }
+
+  async saveTemporaryFile(data, fileName, userId) {
+    try {
+      const userDir = await this.getUserDataPath(userId);
+      const tempDir = path.join(userDir, 'temp');
+      await fs.mkdir(tempDir, { recursive: true });
+      
+      const filePath = path.join(tempDir, fileName);
+      await fs.writeFile(filePath, data);
+      logger.info(`📄 Archivo temporal guardado: ${fileName} para usuario ${userId}`);
+      return filePath;
+    } catch (error) {
+      logger.error('Error al guardar archivo temporal:', error);
+      throw error;
+    }
+  }
+
+  async cleanupTemporaryFiles(userId) {
+    try {
+      const userDir = await this.getUserDataPath(userId);
+      const tempDir = path.join(userDir, 'temp');
+      
+      try {
+        await fs.rm(tempDir, { recursive: true, force: true });
+        await fs.mkdir(tempDir, { recursive: true });
+        logger.info(`🧹 Archivos temporales limpiados para usuario ${userId}`);
+      } catch (error) {
+        if (error.code !== 'ENOENT') {
+          throw error;
+        }
+      }
+    } catch (error) {
+      logger.error('Error al limpiar archivos temporales:', error);
       throw error;
     }
   }
 }
 
+// Exportar una única instancia del servicio
 module.exports = new StorageService(); 
