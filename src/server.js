@@ -13,6 +13,7 @@ const authRoutes = require('./routes/authRoutes');
 const { setupLogger } = require('./utils/logger');
 const { initializeDataDirectory } = require('./utils/init');
 const serverState = require('./utils/serverState');
+const jwt = require('jsonwebtoken');
 
 const logger = setupLogger();
 const app = express();
@@ -52,7 +53,20 @@ app.options('*', cors());
 // --- Rutas ---
 app.get('/api/google', (req, res) => {
   try {
-    const url = googleContactsService.getAuthUrl();
+    // Obtener el userId del token JWT
+    const token = req.headers.authorization?.split(' ')[1];
+    let userId;
+    
+    if (token) {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET || 'default_jwt_secret');
+      userId = decoded.userId;
+    }
+
+    if (!userId) {
+      return res.status(401).json({ error: 'Usuario no autenticado' });
+    }
+
+    const url = googleContactsService.getAuthUrl(userId);
     res.json({ authUrl: url });
   } catch (error) {
     logger.error('Error al generar URL de autenticación:', error);
@@ -62,6 +76,7 @@ app.get('/api/google', (req, res) => {
 
 app.get('/api/auth/google/callback', async (req, res) => {
   const code = req.query.code;
+  const state = req.query.state; // Google devolverá el userId en el state
 
   if (!code) {
     logger.error('Falta el código de autorización');
@@ -74,7 +89,7 @@ app.get('/api/auth/google/callback', async (req, res) => {
   }
 
   try {
-    await googleContactsService.getTokens(code);
+    await googleContactsService.getTokens(code, state); // state contiene el userId
     res.send(`
       <html>
         <body>
@@ -104,7 +119,20 @@ app.get('/api/auth/google/callback', async (req, res) => {
 
 app.post('/api/google/logout', async (req, res) => {
   try {
-    await googleContactsService.logout();
+    // Obtener el userId del token JWT
+    const token = req.headers.authorization?.split(' ')[1];
+    let userId;
+    
+    if (token) {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      userId = decoded.userId;
+    }
+
+    if (!userId) {
+      return res.status(401).json({ error: 'Usuario no autenticado' });
+    }
+
+    await googleContactsService.logout(userId);
     res.json({ message: 'Sesión de Google cerrada exitosamente' });
   } catch (error) {
     logger.error('Error al cerrar sesión de Google:', error);
