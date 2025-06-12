@@ -4,7 +4,6 @@ const express = require('express');
 const cors = require('cors');
 const multer = require('multer');
 const path = require('path');
-const fs = require('fs').promises;
 const connectDB = require('./config/database');
 const googleContactsService = require('./services/googleContacts');
 const contactsRouter = require('./routes/contacts');
@@ -14,39 +13,14 @@ const authRoutes = require('./routes/authRoutes');
 const { setupLogger } = require('./utils/logger');
 const { initializeDataDirectory } = require('./utils/init');
 const serverState = require('./utils/serverState');
-const User = require('./models/User');
 
 const logger = setupLogger();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Configurar multer para manejar archivos por usuario
-const storage = multer.diskStorage({
-  destination: async function (req, file, cb) {
-    try {
-      // Obtener el usuario autenticado
-      const user = await User.findOne({ logged: true });
-      if (!user) {
-        return cb(new Error('Usuario no autenticado'));
-      }
-
-      // Crear directorio de uploads para el usuario
-      const userUploadsDir = path.join(__dirname, 'uploads', `user_${user._id}`);
-      await fs.mkdir(userUploadsDir, { recursive: true });
-      cb(null, userUploadsDir);
-    } catch (error) {
-      cb(error);
-    }
-  },
-  filename: function (req, file, cb) {
-    // Generar nombre único para el archivo
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
-  }
-});
-
+// Configurar multer para manejar archivos
 const upload = multer({
-  storage: storage,
+  dest: path.join(__dirname, 'uploads'),
   fileFilter: (req, file, cb) => {
     if (file.mimetype === 'text/plain') {
       cb(null, true);
@@ -146,9 +120,6 @@ app.get('/api/auth/status', (req, res) => {
 });
 
 app.get('/api/contacts', async (req, res) => {
-
-  const {userId} = req.body;
-
   try {
     if (!serverState.isAuthenticated) {
       return res.status(401).json({
@@ -157,7 +128,7 @@ app.get('/api/contacts', async (req, res) => {
       });
     }
 
-    const contacts = await googleContactsService.getContacts(userId);
+    const contacts = await googleContactsService.getContacts();
     res.json(contacts);
   } catch (error) {
     logger.error('Error al obtener contactos:', error);
